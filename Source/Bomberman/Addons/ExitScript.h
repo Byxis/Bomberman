@@ -19,7 +19,6 @@ public:
 protected:
 	virtual void BeginPlay() override;
 
-
 private:
-	UBoxComponent* m_collision;
+	UBoxComponent* m_collision = nullptr;
 };

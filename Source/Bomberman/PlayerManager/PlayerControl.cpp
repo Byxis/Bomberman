@@ -95,3 +95,14 @@ void APlayerControl::Damage()
 	UE_LOG(LogTemp, Warning, TEXT("AIE"))
 	Destroy();
 }
+
+
+void APlayerControl::BonusBombPower()
+{
+	m_power++;
+}
+
+void APlayerControl::BonusBombLimit()
+{
+	m_maxPlacedBomb++;
+}

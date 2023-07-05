@@ -7,9 +7,18 @@
 #include <Bomberman/PlayerManager/PlayerControl.h>
 #include "./Bomberman/Addons/DamageableActor.h"
 
-UBombHandler::UBombHandler()
+UBombHandler::UBombHandler(const FObjectInitializer& _objectInitializer)
+	:Super(_objectInitializer)
 {
 	PrimaryComponentTick.bCanEverTick = true;
+
+	m_collision = CreateDefaultSubobject<UBoxComponent>(TEXT("collision"));
+	if (m_collision != nullptr)
+	{
+		m_collision->SetRelativeScale3D(FVector(1.0f, 1.0f, 1.0f));
+		m_collision->SetHiddenInGame(false);
+		m_collision->OnComponentEndOverlap.AddDynamic(this, &UBombHandler::OnPlayerLeaveBomb);
+	}
 }
 
 void UBombHandler::SetPower(int32 _newPower)
@@ -35,6 +44,7 @@ void UBombHandler::BeginPlay()
 	if (m_sphere != nullptr)
 	{
 		m_material = m_sphere->CreateDynamicMaterialInstance(0, m_sphere->GetMaterial(0));
+		m_sphere->SetCollisionProfileName(FName("NoCollision"));
 	}
 
 	if (m_player != nullptr && m_owner != nullptr)
@@ -113,7 +123,6 @@ void UBombHandler::ApplyDestroyEffect()
 
 bool UBombHandler::CheckAndDoDestruction(FVector _startTrace, FVector _endTrace)
 {
-
 	FCollisionQueryParams* CQP = new FCollisionQueryParams();
 	TArray<FHitResult> hitResults;
 	bool destroyedWall = false;
@@ -138,4 +147,9 @@ bool UBombHandler::CheckAndDoDestruction(FVector _startTrace, FVector _endTrace)
 		}
 	}
 	return destroyedWall;
+}
+
+void UBombHandler::OnPlayerLeaveBomb(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex)
+{
+	m_sphere->SetCollisionProfileName(FName("BlockAll"));
 }

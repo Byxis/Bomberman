@@ -35,6 +35,8 @@ public:
 	void Damage();
 	virtual void Tick(float DeltaTime) override;
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
+	void BonusBombPower();
+	void BonusBombLimit();
 
 private:
 	UPROPERTY(EditAnywhere, meta = (AllowPrivateAccess = "true"))
