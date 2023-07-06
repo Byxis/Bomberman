@@ -39,7 +39,7 @@ void AEnemyHandler::Tick(float DeltaTime)
 	if (m_currentDirection == EDirection::North)
 	{
 		position.X -= m_speed * DeltaTime;
-		if (std::fmod(position.X+50, 100) < 1)
+		if (std::fmod(position.X+50, 100) < 10)
 		{
 			ChangeDirection();
 		}
@@ -47,7 +47,7 @@ void AEnemyHandler::Tick(float DeltaTime)
 	else if (m_currentDirection == EDirection::South)
 	{
 		position.X += m_speed * DeltaTime;
-		if (std::fmod(position.X + 50, 100) < 1)
+		if (std::fmod(position.X + 50, 100) < 10)
 		{
 			ChangeDirection();
 		}
@@ -55,7 +55,7 @@ void AEnemyHandler::Tick(float DeltaTime)
 	else if (m_currentDirection == EDirection::West)
 	{
 		position.Y -= m_speed * DeltaTime;
-		if (std::fmod(position.Y + 50, 100) < 1)
+		if (std::fmod(position.Y + 50, 100) < 10)
 		{
 			ChangeDirection();
 		}
@@ -63,10 +63,14 @@ void AEnemyHandler::Tick(float DeltaTime)
 	else if (m_currentDirection == EDirection::East)
 	{
 		position.Y += m_speed * DeltaTime;
-		if (std::fmod(position.Y + 50, 100) < 1)
+		if (std::fmod(position.Y + 50, 100) < 10)
 		{
 			ChangeDirection();
 		}
+	}
+	else if (m_currentDirection == EDirection::East)
+	{
+		ChangeDirection();
 	}
 	SetActorLocation(position);
 }
@@ -78,6 +82,7 @@ void AEnemyHandler::Damage()
 
 void AEnemyHandler::OnInteract(UPrimitiveComponent* HitComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
+	UE_LOG(LogTemp, Warning, TEXT("COLLISION"))
 	APlayerControl* playerControl = Cast<APlayerControl>(OtherActor);
 	UBombHandler* bomb = Cast<UBombHandler>(OtherActor);
 
@@ -85,13 +90,16 @@ void AEnemyHandler::OnInteract(UPrimitiveComponent* HitComp, AActor* OtherActor,
 	{
 		playerControl->Damage();
 	}
-	ChangeDirection();
+	else if (bomb != nullptr)
+	{
+		ChangeDirection();
+	}
 }
 
 void AEnemyHandler::ChangeDirection()
 {
 	std::list<EDirection> directions;
-	if (IsDirectionAvailable(FVector(-50, 0, 0)))
+	if (IsDirectionAvailable(FVector(-130, 0, 0)))
 	{
 		directions.push_front(EDirection::North);
 		if (m_currentDirection == EDirection::North && m_timer > 0)
@@ -99,7 +107,7 @@ void AEnemyHandler::ChangeDirection()
 			return;
 		}
 	}
-	if (IsDirectionAvailable(FVector(50, 0, 0)))
+	if (IsDirectionAvailable(FVector(130, 0, 0)))
 	{
 		directions.push_front(EDirection::South);
 		if (m_currentDirection == EDirection::South && m_timer > 0)
@@ -107,7 +115,7 @@ void AEnemyHandler::ChangeDirection()
 			return;
 		}
 	}
-	if (IsDirectionAvailable(FVector(0, -50, 0)))
+	if (IsDirectionAvailable(FVector(0, -130, 0)))
 	{
 		directions.push_front(EDirection::West);
 		if (m_currentDirection == EDirection::West && m_timer > 0)
@@ -115,7 +123,7 @@ void AEnemyHandler::ChangeDirection()
 			return;
 		}
 	}
-	if (IsDirectionAvailable(FVector(0, 50, 0)))
+	if (IsDirectionAvailable(FVector(0, 130, 0)))
 	{
 		directions.push_front(EDirection::East);
 		if (m_currentDirection == EDirection::East && m_timer > 0)
@@ -142,6 +150,7 @@ bool AEnemyHandler::IsDirectionAvailable(FVector _direction)
 	FCollisionQueryParams* CQP = new FCollisionQueryParams();
 	CQP->AddIgnoredActor(this);
 	FHitResult* hitResult = new FHitResult();
+	DrawDebugLine(GetWorld(), GetActorLocation(), GetActorLocation() + _direction, FColor(0, 255, 0), false, 2.0f);
 	if (GetWorld()->LineTraceSingleByChannel(*hitResult, GetActorLocation(), GetActorLocation()+_direction, ECC_Visibility, *CQP))
 	{
 		AActor* actor = hitResult->GetActor();
