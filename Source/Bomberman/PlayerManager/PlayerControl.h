@@ -32,6 +32,7 @@ public:
 	void MoveRight(float _axis);
 	void SpawnBomb();
 	void GiveBackBomb();
+	void SetCanPlaceBomb(bool _bool);
 	void Damage();
 	virtual void Tick(float DeltaTime) override;
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
@@ -46,4 +47,5 @@ private:
 	bool m_dead = false;
 	bool m_canMove = true;
 	int32 m_power = 1;
+	bool m_canPlaceBomb = true;
 };

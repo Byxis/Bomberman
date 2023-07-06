@@ -70,7 +70,7 @@ void APlayerControl::MoveRight(float _axis)
 
 void APlayerControl::SpawnBomb()
 {
-	if (m_maxPlacedBomb > 0)
+	if (m_maxPlacedBomb > 0 && m_canPlaceBomb)
 	{
 		const FVector location(FGenericPlatformMath::RoundToInt((GetActorLocation().X - 50) / 100) * 100 + 50,
 			FGenericPlatformMath::RoundToInt((GetActorLocation().Y - 50) / 100) * 100 + 50,
@@ -80,6 +80,7 @@ void APlayerControl::SpawnBomb()
 		AActor* spawnedbomb = GetWorld()->SpawnActor<AActor>(m_bomb, location, rotation);
 
 		m_maxPlacedBomb--;
+		SetCanPlaceBomb(false);
 		GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Red, message);
 		spawnedbomb->GetComponentByClass<UBombHandler>()->SetPower(m_power);
 	}
@@ -88,6 +89,11 @@ void APlayerControl::SpawnBomb()
 void APlayerControl::GiveBackBomb()
 {
 	m_maxPlacedBomb++;
+}
+
+void APlayerControl::SetCanPlaceBomb(bool _bool)
+{
+	m_canPlaceBomb = _bool;
 }
 
 void APlayerControl::Damage()

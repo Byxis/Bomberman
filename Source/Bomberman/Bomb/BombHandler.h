@@ -16,6 +16,7 @@ public:
 	UBombHandler(const FObjectInitializer& _objectInitializer);
 	void SetPower(int32 newPower);
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
+
 	UFUNCTION()
 	void OnPlayerLeaveBomb(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex);
 

@@ -6,17 +6,20 @@
 #include "Kismet/GameplayStatics.h"
 #include <Bomberman/PlayerManager/PlayerControl.h>
 #include "./Bomberman/Addons/DamageableActor.h"
+#include <Bomberman/Enemy/EnemyHandler.h>
 
 UBombHandler::UBombHandler(const FObjectInitializer& _objectInitializer)
 	:Super(_objectInitializer)
 {
 	PrimaryComponentTick.bCanEverTick = true;
 
+	m_owner = GetOwner();
 	m_collision = CreateDefaultSubobject<UBoxComponent>(TEXT("collision"));
-	if (m_collision != nullptr)
+	if (m_collision != nullptr && m_owner != nullptr)
 	{
+		m_collision->SetupAttachment(m_owner->GetRootComponent());
 		m_collision->SetRelativeScale3D(FVector(1.0f, 1.0f, 1.0f));
-		m_collision->SetHiddenInGame(false);
+		m_collision->SetHiddenInGame(true);
 		m_collision->OnComponentEndOverlap.AddDynamic(this, &UBombHandler::OnPlayerLeaveBomb);
 	}
 }
@@ -26,12 +29,12 @@ void UBombHandler::SetPower(int32 _newPower)
 	m_power = _newPower;
 }
 
+
 void UBombHandler::BeginPlay()
 {
 	Super::BeginPlay();
 	
 	m_player = Cast<APlayerControl>(UGameplayStatics::GetPlayerCharacter(GetWorld(), 0));
-	m_owner = GetOwner();
 
 	check(m_player != nullptr);
 	check(m_owner != nullptr);
@@ -44,7 +47,7 @@ void UBombHandler::BeginPlay()
 	if (m_sphere != nullptr)
 	{
 		m_material = m_sphere->CreateDynamicMaterialInstance(0, m_sphere->GetMaterial(0));
-		m_sphere->SetCollisionProfileName(FName("NoCollision"));
+		m_sphere->SetCollisionProfileName(FName("Trigger"), true);
 	}
 
 	if (m_player != nullptr && m_owner != nullptr)
@@ -71,10 +74,12 @@ void UBombHandler::TickComponent(float DeltaTime, ELevelTick TickType, FActorCom
 	
 	if (m_timer <= 0)
 	{
-		FString message = FString::Printf(TEXT("got new bomb"));
-		m_player->GiveBackBomb();
 		ApplyDestroyEffect();
-		GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Green, message);
+		m_player->GiveBackBomb();
+		if (m_sphere->GetCollisionProfileName().IsEqual(FName("Trigger")))
+		{
+			m_player->SetCanPlaceBomb(true);
+		}
 		m_owner->Destroy();
 	}
 }
@@ -82,11 +87,11 @@ void UBombHandler::TickComponent(float DeltaTime, ELevelTick TickType, FActorCom
 void UBombHandler::ApplyDestroyEffect()
 {
 	FVector startTrace = GetOwner()->GetActorLocation();
-	FVector endTrace = FVector(0.0f, 0.0f, 0.0f);
+	FVector endTrace = FVector(0, 0, 0);
 
 	for (int i = 1; i <= m_power; i++)
 	{
-		endTrace = FVector(0.0f, 100.0f * i, 0.0f) + startTrace;
+		endTrace = FVector(0, 100.0f * i + 50.0f, 0) + startTrace;
 		if (CheckAndDoDestruction(startTrace, endTrace))
 		{
 			break;
@@ -95,7 +100,7 @@ void UBombHandler::ApplyDestroyEffect()
 
 	for (int i = 1; i <= m_power; i++)
 	{
-		endTrace = FVector(0.0f, -100.0f * i, 0.0f) + startTrace;
+		endTrace = FVector(0, -100.0f * i - 50.0f, 0) + startTrace;
 		if (CheckAndDoDestruction(startTrace, endTrace))
 		{
 			break;
@@ -104,7 +109,7 @@ void UBombHandler::ApplyDestroyEffect()
 
 	for (int i = 1; i <= m_power; i++)
 	{
-		endTrace = FVector(-100.0f * i, 0.0f, 0.0f) + startTrace;
+		endTrace = FVector(-100.0f * i - 50.0f, 0, 0) + startTrace;
 		if (CheckAndDoDestruction(startTrace, endTrace))
 		{
 			break;
@@ -113,7 +118,7 @@ void UBombHandler::ApplyDestroyEffect()
 
 	for (int i = 1; i <= m_power; i++)
 	{
-		endTrace = FVector(100.0f * i, 0.0f, 0.0f) + startTrace;
+		endTrace = FVector(100.0f * i + 50.0f, 0, 0) + startTrace;
 		if (CheckAndDoDestruction(startTrace, endTrace))
 		{
 			break;
@@ -127,7 +132,7 @@ bool UBombHandler::CheckAndDoDestruction(FVector _startTrace, FVector _endTrace)
 	TArray<FHitResult> hitResults;
 	bool destroyedWall = false;
 
-	DrawDebugLine(GetWorld(), _startTrace, _endTrace, FColor(255, 0, 0), true);
+	DrawDebugLine(GetWorld(), _startTrace, _endTrace, FColor(255, 255, 0), false, 2.0f);
 	if (GetWorld()->LineTraceMultiByChannel(hitResults, _startTrace, _endTrace, ECC_Visibility, *CQP))
 	{
 		for (FHitResult& hitResult : hitResults)
@@ -135,14 +140,20 @@ bool UBombHandler::CheckAndDoDestruction(FVector _startTrace, FVector _endTrace)
 			AActor* actor = hitResult.GetActor();
 			ADamageableActor* damageableActor = Cast<ADamageableActor>(actor);
 			APlayerControl* playerControl = Cast<APlayerControl>(actor);
-			if (damageableActor != nullptr)
+			AEnemyHandler* enemyHandler = Cast<AEnemyHandler>(actor);
+
+			if (playerControl != nullptr)
+			{
+				playerControl->Damage();
+			}
+			if (enemyHandler != nullptr)
+			{
+				enemyHandler->Damage();
+			}
+			else if (damageableActor != nullptr)
 			{
 				damageableActor->Damage();
 				destroyedWall = true;
-			}
-			else if (playerControl != nullptr)
-			{
-				playerControl->Damage();
 			}
 		}
 	}
@@ -151,5 +162,14 @@ bool UBombHandler::CheckAndDoDestruction(FVector _startTrace, FVector _endTrace)
 
 void UBombHandler::OnPlayerLeaveBomb(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex)
 {
-	m_sphere->SetCollisionProfileName(FName("BlockAll"));
+	if (m_sphere != nullptr)
+	{
+		APlayerControl* playerControl = Cast<APlayerControl>(OtherActor);
+
+		if (playerControl != nullptr)
+		{
+			playerControl->SetCanPlaceBomb(true);
+			m_sphere->SetCollisionProfileName(FName("InvisibleWall"), true);
+		}
+	}
 }
