@@ -6,6 +6,8 @@
 #include "Kismet/GameplayStatics.h"
 #include <Bomberman/PlayerManager/PlayerControl.h>
 #include "./Bomberman/Addons/DamageableActor.h"
+#include <Bomberman/Addons/Bonus.h>
+#include "Engine/World.h"
 #include <Bomberman/Enemy/EnemyHandler.h>
 
 UBombHandler::UBombHandler(const FObjectInitializer& _objectInitializer)
@@ -18,7 +20,7 @@ UBombHandler::UBombHandler(const FObjectInitializer& _objectInitializer)
 	if (m_collision != nullptr && m_owner != nullptr)
 	{
 		m_collision->SetupAttachment(m_owner->GetRootComponent());
-		m_collision->SetRelativeScale3D(FVector(1.0f, 1.0f, 1.0f));
+		m_collision->SetRelativeScale3D(FVector(0.3f, 0.3f, 0.3f));
 		m_collision->SetHiddenInGame(true);
 		m_collision->OnComponentEndOverlap.AddDynamic(this, &UBombHandler::OnPlayerLeaveBomb);
 	}
@@ -68,20 +70,26 @@ void UBombHandler::TickComponent(float DeltaTime, ELevelTick TickType, FActorCom
 		float redValue = (FMath::Sin(GetWorld()->GetTimeSeconds() * 2.0f * PI) + 1.0f) / 2.0f;
 		m_material->SetVectorParameterValue(FName("AdditiveColor"), FLinearColor(redValue, 0.0f, 0.0f));
 		m_sphere->GetStaticMesh()->SetMaterial(0, m_material);
-		float scaleFactor = FMath::Lerp(0.7f, 1.1f, redValue);
+		float scaleFactor = FMath::Lerp(0.4f, 0.6f, redValue);
 		m_sphere->SetWorldScale3D(FVector(scaleFactor));
 	}
 	
 	if (m_timer <= 0)
 	{
-		ApplyDestroyEffect();
-		m_player->GiveBackBomb();
-		if (m_sphere->GetCollisionProfileName().IsEqual(FName("Trigger")))
-		{
-			m_player->SetCanPlaceBomb(true);
-		}
-		m_owner->Destroy();
+		Explode();
 	}
+}
+
+void UBombHandler::Explode()
+{
+	m_exploding = true;
+	ApplyDestroyEffect();
+	m_player->GiveBackBomb();
+	if (m_sphere->GetCollisionProfileName().IsEqual(FName("Trigger")))
+	{
+		m_player->SetCanPlaceBomb(true);
+	}
+	m_owner->Destroy();
 }
 
 void UBombHandler::ApplyDestroyEffect()
@@ -89,75 +97,120 @@ void UBombHandler::ApplyDestroyEffect()
 	FVector startTrace = GetOwner()->GetActorLocation();
 	FVector endTrace = FVector(0, 0, 0);
 
-	for (int i = 1; i <= m_power; i++)
-	{
-		endTrace = FVector(0, 100.0f * i + 50.0f, 0) + startTrace;
-		if (CheckAndDoDestruction(startTrace, endTrace))
-		{
-			break;
-		}
-	}
+	GetWorld()->SpawnActor<AActor>(m_flames, startTrace, FRotator(0, 0, 0));
 
 	for (int i = 1; i <= m_power; i++)
 	{
-		endTrace = FVector(0, -100.0f * i - 50.0f, 0) + startTrace;
-		if (CheckAndDoDestruction(startTrace, endTrace))
+		UE_LOG(LogTemp, Warning, TEXT("IN"))
+		endTrace = FVector(0, 100.0f, 0) + startTrace;
+		if (!CanSpawnFlames(startTrace, endTrace))
 		{
+			CheckIfWall(startTrace, endTrace);
 			break;
 		}
+		GetWorld()->SpawnActor<AActor>(m_flames, endTrace, FRotator(0, 0, 0));
+		startTrace = endTrace;
 	}
+
+	startTrace = GetOwner()->GetActorLocation();
+	endTrace = FVector(0, 0, 0);
 
 	for (int i = 1; i <= m_power; i++)
 	{
-		endTrace = FVector(-100.0f * i - 50.0f, 0, 0) + startTrace;
-		if (CheckAndDoDestruction(startTrace, endTrace))
+		endTrace = FVector(0, -100.0f, 0) + startTrace;
+		if (!CanSpawnFlames(startTrace, endTrace))
 		{
+			CheckIfWall(startTrace, endTrace);
 			break;
 		}
+		GetWorld()->SpawnActor<AActor>(m_flames, endTrace, FRotator(0, 0, 0));
+		startTrace = endTrace;
 	}
+
+	startTrace = GetOwner()->GetActorLocation();
+	endTrace = FVector(0, 0, 0);
 
 	for (int i = 1; i <= m_power; i++)
 	{
-		endTrace = FVector(100.0f * i + 50.0f, 0, 0) + startTrace;
-		if (CheckAndDoDestruction(startTrace, endTrace))
+		endTrace = FVector(-100.0f, 0, 0) + startTrace;
+		if (!CanSpawnFlames(startTrace, endTrace))
 		{
+			CheckIfWall(startTrace, endTrace);
 			break;
 		}
+		GetWorld()->SpawnActor<AActor>(m_flames, endTrace, FRotator(0, 0, 0));
+		startTrace = endTrace;
+	}
+
+	startTrace = GetOwner()->GetActorLocation();
+	endTrace = FVector(0, 0, 0);
+
+	for (int i = 1; i <= m_power; i++)
+	{
+		endTrace = FVector(100.0f, 0, 0) + startTrace;
+		if (!CanSpawnFlames(startTrace, endTrace))
+		{
+			CheckIfWall(startTrace, endTrace);
+			break;
+		}
+		GetWorld()->SpawnActor<AActor>(m_flames, endTrace, FRotator(0, 0, 0));
+		startTrace = endTrace;
 	}
 }
 
-bool UBombHandler::CheckAndDoDestruction(FVector _startTrace, FVector _endTrace)
+bool UBombHandler::CanSpawnFlames(FVector _startTrace, FVector _endTrace)
 {
 	FCollisionQueryParams* CQP = new FCollisionQueryParams();
 	TArray<FHitResult> hitResults;
-	bool destroyedWall = false;
+	bool result = true;
 
-	DrawDebugLine(GetWorld(), _startTrace, _endTrace, FColor(255, 255, 0), false, 2.0f);
 	if (GetWorld()->LineTraceMultiByChannel(hitResults, _startTrace, _endTrace, ECC_Visibility, *CQP))
 	{
 		for (FHitResult& hitResult : hitResults)
 		{
 			AActor* actor = hitResult.GetActor();
-			ADamageableActor* damageableActor = Cast<ADamageableActor>(actor);
-			APlayerControl* playerControl = Cast<APlayerControl>(actor);
-			AEnemyHandler* enemyHandler = Cast<AEnemyHandler>(actor);
+			if (actor != nullptr)
+			{
+				APlayerControl* playerControl = Cast<APlayerControl>(actor);
+				AEnemyHandler* enemyHandler = Cast<AEnemyHandler>(actor);
+				ABonus* bonus = Cast<ABonus>(actor);
+				UBombHandler* bomb = actor->GetComponentByClass<UBombHandler>();
+				ADamageableActor* damageableActor = Cast<ADamageableActor>(actor);
 
-			if (playerControl != nullptr)
-			{
-				playerControl->Damage();
-			}
-			if (enemyHandler != nullptr)
-			{
-				enemyHandler->Damage();
-			}
-			else if (damageableActor != nullptr)
-			{
-				damageableActor->Damage();
-				destroyedWall = true;
+				if (playerControl == nullptr && enemyHandler == nullptr && bonus == nullptr && bomb == nullptr)
+				{
+					result = false;
+				}
 			}
 		}
 	}
-	return destroyedWall;
+	return result;
+}
+
+void UBombHandler::CheckIfWall(FVector _startTrace, FVector _endTrace)
+{
+	FCollisionQueryParams* CQP = new FCollisionQueryParams();
+	TArray<FHitResult> hitResults;
+
+	if (GetWorld()->LineTraceMultiByChannel(hitResults, _startTrace, _endTrace, ECC_Visibility, *CQP))
+	{
+		for (FHitResult& hitResult : hitResults)
+		{
+			AActor* actor = hitResult.GetActor();
+			if (actor != nullptr)
+			{
+				ADamageableActor* damageableActor = Cast<ADamageableActor>(actor);
+
+				if (damageableActor != nullptr)
+				{
+					if (damageableActor->Damage())
+					{
+						GetWorld()->SpawnActor<AActor>(m_flames, _endTrace, FRotator(0, 0, 0));
+					}
+				}
+			}
+		}
+	}
 }
 
 void UBombHandler::OnPlayerLeaveBomb(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex)
@@ -169,7 +222,12 @@ void UBombHandler::OnPlayerLeaveBomb(UPrimitiveComponent* OverlappedComp, AActor
 		if (playerControl != nullptr)
 		{
 			playerControl->SetCanPlaceBomb(true);
-			m_sphere->SetCollisionProfileName(FName("InvisibleWall"), true);
+			m_sphere->SetCollisionProfileName(FName("InvisibleWallDynamic"), true);
 		}
 	}
+}
+
+bool UBombHandler::IsExploding()
+{
+	return m_exploding;
 }

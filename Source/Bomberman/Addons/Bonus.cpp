@@ -16,6 +16,15 @@ ABonus::ABonus(const FObjectInitializer& _objectInitializer)
 	}
 }
 
+void ABonus::Tick(float DeltaTime)
+{
+	Super::Tick(DeltaTime);
+	if (m_invicibilityTimer > 0)
+	{
+		m_invicibilityTimer -= DeltaTime;
+	}
+}
+
 void ABonus::OnPlayerTakeBonus(class UPrimitiveComponent* HitComp, class AActor* OtherActor, class UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
 	APlayerControl* playerControl = Cast<APlayerControl>(OtherActor);
@@ -35,4 +44,25 @@ void ABonus::OnPlayerTakeBonus(class UPrimitiveComponent* HitComp, class AActor*
 		break;
 	}
 	Destroy();
+}
+
+void ABonus::Damage()
+{
+	if (m_invicibilityTimer <= 0)
+	{
+		Destroy();
+	}
+}
+
+void ABonus::SetBonusType(int32 _type)
+{
+	switch (_type % 2)
+	{
+	default:
+		m_bonusType = EBonus::Limit;
+		break;
+	case 1:
+		m_bonusType = EBonus::Power;
+		break;
+	}
 }

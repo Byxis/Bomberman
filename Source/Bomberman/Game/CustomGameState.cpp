@@ -18,3 +18,13 @@ int32 ACustomGameState::GetLevel()
 {
 	return m_level;
 }
+
+void ACustomGameState::AddScore(int32 _score)
+{
+	m_score += _score;
+}
+
+int32 ACustomGameState::GetScore()
+{
+	return m_score;
+}

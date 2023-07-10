@@ -1,11 +1,12 @@
 #include "ExitScript.h"
 #include <Bomberman/Game/CustomGameMode.h>
 #include <Kismet/GameplayStatics.h>
+#include <Bomberman/PlayerManager/PlayerControl.h>
 
 AExitScript::AExitScript(const FObjectInitializer& _objectInitializer)
 	:Super(_objectInitializer)
 {
-	PrimaryActorTick.bCanEverTick = true;
+	PrimaryActorTick.bCanEverTick = false;
 	m_collision = CreateDefaultSubobject<UBoxComponent>(TEXT("collision"));
 	if (m_collision != nullptr)
 	{
@@ -17,25 +18,13 @@ AExitScript::AExitScript(const FObjectInitializer& _objectInitializer)
 	}
 }
 
-void AExitScript::BeginPlay()
-{
-	Super::BeginPlay();
-}
-
-void AExitScript::Tick(float DeltaTime)
-{
-	Super::Tick(DeltaTime);
-
-}
-
 void AExitScript::OnPlayerEnterExit(class UPrimitiveComponent* HitComp, class AActor* OtherActor, class UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
-	FString message = FString::Printf(TEXT("ENTERED"));
-	GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Red, message);
 	ACustomGameMode* GameMode = Cast<ACustomGameMode>(UGameplayStatics::GetGameMode(this));
-	if (GameMode)
+	APlayerControl* playerControl = Cast<APlayerControl>(OtherActor);
+	if (GameMode && playerControl != nullptr)
 	{
-		GameMode->SetCurrentGameState(EGameState::End);
+		GameMode->NextLevel();
 	}
 }
 

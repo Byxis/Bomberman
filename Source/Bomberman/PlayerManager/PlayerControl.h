@@ -11,6 +11,7 @@
 #include "GameFramework/SpringArmComponent.h"
 #include "Camera/CameraActor.h"
 #include "Blueprint/UserWidget.h"
+#include "PlayerHUD.h"
 #include "PlayerControl.generated.h"
 
 UCLASS()
@@ -38,6 +39,13 @@ public:
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 	void BonusBombPower();
 	void BonusBombLimit();
+	void ActualiseScore(int32 _score);
+	void PauseGame();
+
+	virtual void EndPlay(const EEndPlayReason::Type EndPlayReason) override;
+
+protected:
+	virtual void BeginPlay() override;
 
 private:
 	UPROPERTY(EditAnywhere, meta = (AllowPrivateAccess = "true"))
@@ -48,4 +56,8 @@ private:
 	bool m_canMove = true;
 	int32 m_power = 1;
 	bool m_canPlaceBomb = true;
+	UPROPERTY(Editanywhere)
+		TSubclassOf<UPlayerHUD> m_playerHudClass = nullptr;
+	UPROPERTY()
+		class UPlayerHUD* m_playerHud = nullptr;
 };

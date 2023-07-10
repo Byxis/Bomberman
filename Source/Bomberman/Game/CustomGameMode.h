@@ -2,6 +2,7 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/GameModeBase.h"
+#include "Kismet/GameplayStatics.h"
 #include "Camera/CameraComponent.h"
 #include "CustomGameMode.generated.h"
 
@@ -27,10 +28,21 @@ public:
 	UFUNCTION(BlueprintPure)
 	EGameState GetCurrentGameState() const;
 	void SetCurrentGameState(EGameState _newState);
+	int32 GetNbrOfWalls();
+	void RemoveWall();
+	bool HasExitSpawned();
+	void SetExitSpawned(bool _bool);
+	void AddScore(int32 _score);
+	int32 GetScore();
 
 protected:
 	virtual void BeginPlay() override;
 
 private:
 	EGameState m_currentGameState;
+	TArray<FString> levels;
+	int32 m_nbrWalls = 0;
+	bool m_hasExitSpawned = false;
+
+	void CountWalls();
 };
