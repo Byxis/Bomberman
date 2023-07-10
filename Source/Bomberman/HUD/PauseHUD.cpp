@@ -1,9 +1,11 @@
-#include "PlayerHUD.h"
-#include <string>
-#include <Bomberman/Game/CustomGameMode.h>
-#include <Kismet/GameplayStatics.h>
+#include "PauseHUD.h"
 
-void UPlayerHUD::SetScore(int32 _score)
+#include <string>
+#include "./Bomberman/PlayerManager/PlayerControl.h"
+#include <Bomberman/Game/CustomGameMode.h>
+#include "Kismet/GameplayStatics.h"
+
+void UPauseHUD::SetScore(int32 _score)
 {
     if (m_scoreText != nullptr)
     {
@@ -12,7 +14,7 @@ void UPlayerHUD::SetScore(int32 _score)
     }
 }
 
-void UPlayerHUD::NativeConstruct()
+void UPauseHUD::NativeConstruct()
 {
     Super::NativeConstruct();
 
@@ -27,5 +29,18 @@ void UPlayerHUD::NativeConstruct()
         {
             SetScore(0);
         }
+    }
+    if (m_buttonPlay != nullptr)
+    {
+        m_buttonPlay->OnClicked.AddDynamic(this, &UPauseHUD::UnPauseGame);
+    }
+}
+
+void UPauseHUD::UnPauseGame()
+{
+    APlayerControl* playerControl = Cast<APlayerControl>(UGameplayStatics::GetPlayerPawn(GetWorld(), 0));
+    if (playerControl != nullptr)
+    {
+        playerControl->PauseGame();
     }
 }

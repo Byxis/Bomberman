@@ -16,7 +16,7 @@ ACustomGameMode::ACustomGameMode()
 void ACustomGameMode::BeginPlay()
 {
 	Super::BeginPlay();
-	SetCurrentGameState(EGameState::Menu);
+	SetCurrentGameState(EGameState::Playing);
 	CountWalls();
 }
 

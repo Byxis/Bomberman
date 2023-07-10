@@ -1,7 +1,5 @@
 #include "PlayerHUD.h"
 #include <string>
-#include <Bomberman/Game/CustomGameMode.h>
-#include <Kismet/GameplayStatics.h>
 
 void UPlayerHUD::SetScore(int32 _score)
 {
@@ -18,14 +16,6 @@ void UPlayerHUD::NativeConstruct()
 
     if (m_scoreText != nullptr)
     {
-        ACustomGameMode* gameMode = Cast<ACustomGameMode>(UGameplayStatics::GetGameMode(this));
-        if (gameMode != nullptr)
-        {
-            SetScore(gameMode->GetScore());
-        }
-        else
-        {
-            SetScore(0);
-        }
+        SetScore(0);
     }
 }

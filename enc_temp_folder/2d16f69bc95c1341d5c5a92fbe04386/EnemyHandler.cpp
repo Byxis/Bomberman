@@ -79,10 +79,10 @@ void AEnemyHandler::Tick(float DeltaTime)
 
 void AEnemyHandler::Damage()
 {
-	ACustomGameMode* gameMode = Cast<ACustomGameMode>(UGameplayStatics::GetGameMode(this));
-	if (gameMode != nullptr)
+	ACustomGameMode* GameMode = Cast<ACustomGameMode>(UGameplayStatics::GetGameMode(this));
+	if (GameMode != nullptr)
 	{
-		gameMode->AddScore(100);
+		GameMode->AddScore(100);
 	}
 	Destroy();
 }

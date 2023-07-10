@@ -12,6 +12,7 @@
 #include "Camera/CameraActor.h"
 #include "Blueprint/UserWidget.h"
 #include "PlayerHUD.h"
+#include "./Bomberman/HUD/PauseHUD.h"
 #include "PlayerControl.generated.h"
 
 UCLASS()
@@ -57,7 +58,11 @@ private:
 	int32 m_power = 1;
 	bool m_canPlaceBomb = true;
 	UPROPERTY(Editanywhere)
-		TSubclassOf<UPlayerHUD> m_playerHudClass = nullptr;
+	TSubclassOf<UPlayerHUD> m_playerHudClass = nullptr;
 	UPROPERTY()
-		class UPlayerHUD* m_playerHud = nullptr;
+	class UPlayerHUD* m_playerHud = nullptr;
+	UPROPERTY(Editanywhere)
+	TSubclassOf<UPauseHUD> m_pauseHudClass = nullptr;
+	UPROPERTY()
+	class UPauseHUD* m_pauseHud = nullptr;
 };

@@ -39,7 +39,7 @@ protected:
 	virtual void BeginPlay() override;
 
 private:
-	EGameState m_currentGameState;
+	EGameState m_currentGameState = EGameState::Menu;
 	TArray<FString> levels;
 	int32 m_nbrWalls = 0;
 	bool m_hasExitSpawned = false;

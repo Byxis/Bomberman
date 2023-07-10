@@ -168,9 +168,7 @@ void APlayerControl::PauseGame()
 		{
 			gameMode->SetCurrentGameState(EGameState::PauseMenu);
 			m_playerHud->RemoveFromParent();
-			
 			m_pauseHud = CreateWidget<UPauseHUD>(GetGameInstance(), m_pauseHudClass, FName("PauseWidget"));
-			
 			m_pauseHud->AddToViewport();
 			GetWorld()->GetFirstPlayerController()->SetPause(true);
 			GetWorld()->GetFirstPlayerController()->SetShowMouseCursor(true);
@@ -179,9 +177,7 @@ void APlayerControl::PauseGame()
 		{
 			gameMode->SetCurrentGameState(EGameState::Playing);
 			m_pauseHud->RemoveFromParent();
-
 			m_playerHud = CreateWidget<UPlayerHUD>(GetGameInstance(), m_playerHudClass, FName("PlayerWidget"));
-			
 			m_playerHud->AddToViewport();
 			GetWorld()->GetFirstPlayerController()->SetPause(false);
 			GetWorld()->GetFirstPlayerController()->SetShowMouseCursor(false);
