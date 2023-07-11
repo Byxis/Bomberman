@@ -21,7 +21,7 @@ UBombHandler::UBombHandler(const FObjectInitializer& _objectInitializer)
 	{
 		m_collision->SetupAttachment(m_owner->GetRootComponent());
 		m_collision->SetRelativeScale3D(FVector(0.3f, 0.3f, 0.3f));
-		m_collision->SetHiddenInGame(true);
+		m_collision->SetHiddenInGame(false);
 		m_collision->OnComponentEndOverlap.AddDynamic(this, &UBombHandler::OnPlayerLeaveBomb);
 	}
 }

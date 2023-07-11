@@ -23,9 +23,14 @@ private:
 	int32 m_sartingHealth = 2;
 	int32 m_health = 0;
 	UStaticMeshComponent* m_mesh = nullptr;
-	UMaterialInstanceDynamic* m_materialInstance = nullptr;
 	UPROPERTY(EditAnywhere, meta = (AllowPrivateAccess = "true"))
-	TSubclassOf<AActor> m_bonus = nullptr;
+	UStaticMesh* m_destroyedBricks = nullptr;
+
+	UPROPERTY(EditAnywhere, meta = (AllowPrivateAccess = "true"))
+	TSubclassOf<AActor> m_bonusPower = nullptr;
+	UPROPERTY(EditAnywhere, meta = (AllowPrivateAccess = "true"))
+	TSubclassOf<AActor> m_bonusLimit = nullptr;
+
 	UPROPERTY(EditAnywhere, meta = (AllowPrivateAccess = "true"))
 	TSubclassOf<AActor> m_exit = nullptr;
 };

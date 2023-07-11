@@ -81,18 +81,3 @@ void ACustomGameMode::SetExitSpawned(bool _bool)
 {
 	m_hasExitSpawned = _bool;
 }
-
-void ACustomGameMode::AddScore(int32 _score)
-{
-	GetGameState<ACustomGameState>()->AddScore(_score);
-	APlayerControl* playerControl =	Cast<APlayerControl>(UGameplayStatics::GetPlayerPawn(GetWorld(), 0));
-	if (playerControl != nullptr)
-	{
-		playerControl->ActualiseScore(GetScore());
-	}
-}
-
-int32 ACustomGameMode::GetScore()
-{
-	return GetGameState<ACustomGameState>()->GetScore();
-}

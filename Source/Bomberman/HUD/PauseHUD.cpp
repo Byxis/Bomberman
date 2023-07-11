@@ -2,7 +2,7 @@
 
 #include <string>
 #include "./Bomberman/PlayerManager/PlayerControl.h"
-#include <Bomberman/Game/CustomGameMode.h>
+#include <Bomberman/Game/CustomGameInstance.h>
 #include "Kismet/GameplayStatics.h"
 
 void UPauseHUD::SetScore(int32 _score)
@@ -20,10 +20,10 @@ void UPauseHUD::NativeConstruct()
 
     if (m_scoreText != nullptr)
     {
-        ACustomGameMode* gameMode = Cast<ACustomGameMode>(UGameplayStatics::GetGameMode(this));
-        if (gameMode != nullptr)
+        UCustomGameInstance* gameInstance = Cast<UCustomGameInstance>(UGameplayStatics::GetGameInstance(GetWorld()));
+        if (gameInstance != nullptr)
         {
-            SetScore(gameMode->GetScore());
+            SetScore(gameInstance->GetScore());
         }
         else
         {

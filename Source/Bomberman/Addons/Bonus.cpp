@@ -9,7 +9,6 @@ ABonus::ABonus(const FObjectInitializer& _objectInitializer)
 	if (m_collision != nullptr)
 	{
 		m_collision->SetRelativeScale3D(FVector(1.0f, 1.0f, 1.0f));
-		m_collision->SetHiddenInGame(false);
 		m_collision->OnComponentBeginOverlap.AddDynamic(this, &ABonus::OnPlayerTakeBonus);
 
 		RootComponent = m_collision;

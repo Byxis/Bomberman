@@ -13,6 +13,7 @@
 #include "Blueprint/UserWidget.h"
 #include "PlayerHUD.h"
 #include "./Bomberman/HUD/PauseHUD.h"
+#include <Bomberman/Game/CustomGameInstance.h>
 #include "PlayerControl.generated.h"
 
 UCLASS()
@@ -40,7 +41,7 @@ public:
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 	void BonusBombPower();
 	void BonusBombLimit();
-	void ActualiseScore(int32 _score);
+	void ActualiseScore();
 	void PauseGame();
 
 	virtual void EndPlay(const EEndPlayReason::Type EndPlayReason) override;
@@ -55,7 +56,6 @@ private:
 	int32 m_maxPlacedBomb = 1;
 	bool m_dead = false;
 	bool m_canMove = true;
-	int32 m_power = 1;
 	bool m_canPlaceBomb = true;
 	UPROPERTY(Editanywhere)
 	TSubclassOf<UPlayerHUD> m_playerHudClass = nullptr;
@@ -65,4 +65,5 @@ private:
 	TSubclassOf<UPauseHUD> m_pauseHudClass = nullptr;
 	UPROPERTY()
 	class UPauseHUD* m_pauseHud = nullptr;
+	UCustomGameInstance* m_gameInstance = nullptr;
 };

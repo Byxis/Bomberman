@@ -8,6 +8,7 @@
 #include "GameFramework/SpringArmComponent.h"
 #include "./Bomberman/Bomb/BombHandler.h"
 #include <Bomberman/Game/CustomGameMode.h>
+#include <Bomberman/Game/CustomGameInstance.h>
 
 APlayerControl::APlayerControl()
 {
@@ -36,8 +37,14 @@ void APlayerControl::BeginPlay()
 {
 	Super::BeginPlay();
 	m_playerHud = CreateWidget<UPlayerHUD>(GetGameInstance(), m_playerHudClass, FName("PlayerWidget"));
-	m_playerHud->AddToViewport();
+	if (m_playerHud != nullptr)
+	{
+		m_playerHud->AddToViewport();
+	}
+	ActualiseScore();
+	m_gameInstance = Cast<UCustomGameInstance>(UGameplayStatics::GetGameInstance(GetWorld()));
 
+	m_maxPlacedBomb = m_gameInstance->GetBombLimit();
 }
 
 void APlayerControl::EndPlay(const EEndPlayReason::Type EndPlayReason)
@@ -114,7 +121,7 @@ void APlayerControl::SpawnBomb()
 			GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Red, message);
 			UBombHandler* bombHandler = spawnedbomb->GetComponentByClass<UBombHandler>();
 			if (bombHandler != nullptr)
-				bombHandler->SetPower(m_power);
+				bombHandler->SetPower(m_gameInstance->GetBombPower());
 
 			m_maxPlacedBomb--;
 		}
@@ -139,30 +146,34 @@ void APlayerControl::Damage()
 
 void APlayerControl::BonusBombPower()
 {
-	m_power++;
+	m_gameInstance->AddBombPower(1);
 }
 
 void APlayerControl::BonusBombLimit()
 {
+	m_gameInstance->AddBombLimit(1);
 	m_maxPlacedBomb++;
 }
 
-void APlayerControl::ActualiseScore(int32 _score)
+void APlayerControl::ActualiseScore()
 {
-	if (m_playerHud != nullptr)
+	if (m_gameInstance != nullptr)
 	{
-		m_playerHud->SetScore(_score);
-	}
-	if (m_pauseHud != nullptr)
-	{
-		m_pauseHud->SetScore(_score);
+		if (m_playerHud != nullptr)
+		{
+			m_playerHud->SetScore(m_gameInstance->GetScore());
+		}
+		if (m_pauseHud != nullptr)
+		{
+			m_pauseHud->SetScore(m_gameInstance->GetScore());
+		}
 	}
 }
 
 void APlayerControl::PauseGame()
 {
 	ACustomGameMode* gameMode = Cast<ACustomGameMode>(UGameplayStatics::GetGameMode(this));
-	if (gameMode != nullptr)
+	if (gameMode != nullptr && m_playerHud != nullptr && m_pauseHud != nullptr)
 	{
 		if (gameMode->GetCurrentGameState() == EGameState::Playing)
 		{

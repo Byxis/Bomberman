@@ -17,7 +17,7 @@ public:
 	void OnEntityInteract(class UPrimitiveComponent* HitComp, class AActor* OtherActor, class UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
 
 private:
-	float m_timer = 3.5f;
+	float m_timer = 2.5f;
 	bool m_particuleActivated = true;
 	UBoxComponent* m_collision = nullptr;
 };

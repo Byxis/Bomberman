@@ -4,7 +4,7 @@
 #include <list>
 #include <iostream>
 #include <stdlib.h>
-#include <Bomberman/Game/CustomGameMode.h>
+#include <Bomberman/Game/CustomGameInstance.h>
 #include <Kismet/GameplayStatics.h>
 
 AEnemyHandler::AEnemyHandler(const FObjectInitializer& _objectInitializer)
@@ -79,10 +79,10 @@ void AEnemyHandler::Tick(float DeltaTime)
 
 void AEnemyHandler::Damage()
 {
-	ACustomGameMode* gameMode = Cast<ACustomGameMode>(UGameplayStatics::GetGameMode(this));
-	if (gameMode != nullptr)
+	UCustomGameInstance* gameInstance = Cast<UCustomGameInstance>(UGameplayStatics::GetGameInstance(GetWorld()));
+	if (gameInstance != nullptr)
 	{
-		gameMode->AddScore(100);
+		gameInstance->AddScore(100);
 	}
 	Destroy();
 }

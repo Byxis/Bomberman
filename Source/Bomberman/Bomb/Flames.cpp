@@ -39,7 +39,7 @@ void AFlames::Tick(float DeltaTime)
 
 void AFlames::OnEntityInteract(UPrimitiveComponent* HitComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
-	if (m_timer >= 0.5f)
+	if (m_timer >= 0.7f)
 	{
 		APlayerControl* playerControl = Cast<APlayerControl>(OtherActor);
 		if (playerControl != nullptr)
@@ -61,7 +61,7 @@ void AFlames::OnEntityInteract(UPrimitiveComponent* HitComp, AActor* OtherActor,
 		UBombHandler* bomb = OtherActor->GetComponentByClass<UBombHandler>();
 		if (bomb != nullptr)
 		{
-			if (!bomb->IsExploding())
+			if (!bomb->IsExploding() && GetDistanceTo(OtherActor) <= 50)
 				bomb->Explode();
 		}
 	}

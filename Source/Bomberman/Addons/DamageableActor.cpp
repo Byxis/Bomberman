@@ -11,15 +11,17 @@ ADamageableActor::ADamageableActor()
 void ADamageableActor::BeginPlay()
 {
 	Super::BeginPlay();
-	m_health = m_sartingHealth;
 	SetActorTickEnabled(false);
 
+	m_health = m_sartingHealth;
 	m_mesh = GetComponentByClass<UStaticMeshComponent>();
-	if (m_mesh != nullptr)
+
+	if (m_health == 1)
 	{
-		m_materialInstance = m_mesh->CreateDynamicMaterialInstance(0, m_mesh->GetMaterial(0));
-		m_materialInstance->SetScalarParameterValue(FName("DamageValue"), m_health);
-		m_mesh->GetStaticMesh()->SetMaterial(0, m_materialInstance);
+		if (m_mesh != nullptr && m_destroyedBricks != nullptr)
+		{
+			m_mesh->SetStaticMesh(m_destroyedBricks);
+		}
 	}
 }
 
@@ -41,24 +43,37 @@ bool ADamageableActor::Damage()
 					GameMode->SetExitSpawned(true);
 				}
 			}
-			else if (random <= 5 && m_bonus != nullptr)
+			else if (random <= 5)
 			{
-				AActor* bonusActor = GetWorld()->SpawnActor<AActor>(m_bonus, GetActorLocation(), GetActorRotation());
-				ABonus* bonus = Cast<ABonus>(bonusActor);
-				if (bonus != nullptr)
+				random = std::rand() % 100;
+				if (random <= 49 && m_bonusLimit != nullptr)
 				{
-					bonus->SetBonusType(random);
+					AActor* bonusActor = GetWorld()->SpawnActor<AActor>(m_bonusLimit, GetActorLocation(), GetActorRotation());
+					ABonus* bonus = Cast<ABonus>(bonusActor);
+					if (bonus != nullptr)
+					{
+						bonus->SetBonusType(0);
+					}
 				}
+				else if (random >= 50 && m_bonusPower != nullptr)
+				{
+					AActor* bonusActor = GetWorld()->SpawnActor<AActor>(m_bonusPower, GetActorLocation(), GetActorRotation());
+					ABonus* bonus = Cast<ABonus>(bonusActor);
+					if (bonus != nullptr)
+					{
+						bonus->SetBonusType(1);
+					}
+				}
+				
 			}
 		}
 		
 		Destroy();
 		return true;
 	}
-	else if (m_mesh != nullptr)
+	else if (m_mesh != nullptr && m_destroyedBricks != nullptr)
 	{
-		m_materialInstance->SetScalarParameterValue(FName("DamageValue"), m_health);
-		m_mesh->GetStaticMesh()->SetMaterial(0, m_materialInstance);
+		m_mesh->SetStaticMesh(m_destroyedBricks);
 	}
 	return false;
 }

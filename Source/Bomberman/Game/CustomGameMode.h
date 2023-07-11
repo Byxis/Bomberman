@@ -32,8 +32,6 @@ public:
 	void RemoveWall();
 	bool HasExitSpawned();
 	void SetExitSpawned(bool _bool);
-	void AddScore(int32 _score);
-	int32 GetScore();
 
 protected:
 	virtual void BeginPlay() override;

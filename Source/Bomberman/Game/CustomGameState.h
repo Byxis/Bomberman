@@ -20,10 +20,7 @@ public:
 
 	void SetLevel(int32 _newLevel);
 	int32 GetLevel();
-	void AddScore(int32 _score);
-	int32 GetScore();
 
 private:
 	int32 m_level = 1;
-	int32 m_score = 0;
 };
