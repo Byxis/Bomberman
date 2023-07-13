@@ -4,6 +4,7 @@
 #include "GameFramework/GameModeBase.h"
 #include "Kismet/GameplayStatics.h"
 #include "Camera/CameraComponent.h"
+#include <Bomberman/Bomb/BombHandler.h>
 #include "CustomGameMode.generated.h"
 
 UENUM()
@@ -32,13 +33,17 @@ public:
 	void RemoveWall();
 	bool HasExitSpawned();
 	void SetExitSpawned(bool _bool);
+	void AddBomb(UBombHandler* _bomb);
+	void RemoveBomb(UBombHandler* _bomb);
+	TArray<UBombHandler*> GetAllBombs();
 
 protected:
 	virtual void BeginPlay() override;
 
 private:
-	EGameState m_currentGameState = EGameState::Menu;
-	TArray<FString> levels;
+	EGameState m_currentGameState = EGameState::Playing;
+	TArray<FString> m_levels;
+	TArray<UBombHandler*> m_bombs;
 	int32 m_nbrWalls = 0;
 	bool m_hasExitSpawned = false;
 

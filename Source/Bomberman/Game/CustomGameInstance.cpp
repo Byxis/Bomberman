@@ -26,6 +26,11 @@ void UCustomGameInstance::AddBombLimit(int32 _bombLimit)
     m_bombLimit += _bombLimit;
 }
 
+bool UCustomGameInstance::HasMaxedBombLimit()
+{
+    return m_bombLimit >= m_maxBombLimit;
+}
+
 int32 UCustomGameInstance::GetBombPower()
 {
     return m_bombPower;
@@ -34,6 +39,11 @@ int32 UCustomGameInstance::GetBombPower()
 void UCustomGameInstance::AddBombPower(int32 _bombPower)
 {
     m_bombPower += _bombPower;
+}
+
+bool UCustomGameInstance::HasMaxedBombPower()
+{
+    return m_bombPower >= m_maxBombPower;
 }
 
 int32 UCustomGameInstance::GetScore()
@@ -59,4 +69,29 @@ void UCustomGameInstance::AddScore(int32 _score)
     {
         playerControl->ActualiseScore();
     }
+}
+
+float UCustomGameInstance::GetSpeed()
+{
+    return m_speed;
+}
+
+void UCustomGameInstance::AddSpeed(float _speed)
+{
+    m_speed += _speed;
+}
+
+bool UCustomGameInstance::HasMaxedSpeed()
+{
+    return m_speed >= m_maxSpeed;
+}
+
+bool UCustomGameInstance::HasDetonatorBonus()
+{
+    return m_detonator;
+}
+
+void UCustomGameInstance::SetDetonatorBonus(bool _detonator)
+{
+    m_detonator = _detonator;
 }

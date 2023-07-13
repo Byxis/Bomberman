@@ -9,6 +9,8 @@
 #include <Bomberman/Addons/Bonus.h>
 #include "Engine/World.h"
 #include <Bomberman/Enemy/EnemyHandler.h>
+#include <Bomberman/Game/CustomGameMode.h>
+#include "Flames.h"
 
 UBombHandler::UBombHandler(const FObjectInitializer& _objectInitializer)
 	:Super(_objectInitializer)
@@ -16,13 +18,19 @@ UBombHandler::UBombHandler(const FObjectInitializer& _objectInitializer)
 	PrimaryComponentTick.bCanEverTick = true;
 
 	m_owner = GetOwner();
+	m_collisionExit = CreateDefaultSubobject<UBoxComponent>(TEXT("collisionExit"));
+	if (m_collisionExit != nullptr && m_owner != nullptr)
+	{
+		m_collisionExit->SetupAttachment(m_owner->GetRootComponent());
+		m_collisionExit->SetRelativeScale3D(FVector(0.3f, 0.3f, 0.3f));
+		m_collisionExit->SetCollisionProfileName(FName("OverlapAll"), true);
+		m_collisionExit->OnComponentEndOverlap.AddDynamic(this, &UBombHandler::OnPlayerLeaveBomb);
+	}
 	m_collision = CreateDefaultSubobject<UBoxComponent>(TEXT("collision"));
 	if (m_collision != nullptr && m_owner != nullptr)
 	{
 		m_collision->SetupAttachment(m_owner->GetRootComponent());
-		m_collision->SetRelativeScale3D(FVector(0.3f, 0.3f, 0.3f));
-		m_collision->SetHiddenInGame(false);
-		m_collision->OnComponentEndOverlap.AddDynamic(this, &UBombHandler::OnPlayerLeaveBomb);
+		m_collision->SetRelativeScale3D(FVector(1.0f, 1.0f, 1.0f));
 	}
 }
 
@@ -30,7 +38,6 @@ void UBombHandler::SetPower(int32 _newPower)
 {
 	m_power = _newPower;
 }
-
 
 void UBombHandler::BeginPlay()
 {
@@ -42,20 +49,25 @@ void UBombHandler::BeginPlay()
 	check(m_owner != nullptr);
 	if (m_owner != nullptr)
 	{
-		m_sphere = Cast<UStaticMeshComponent>(m_owner->GetComponentByClass(UStaticMeshComponent::StaticClass()));
+		m_skeleton = Cast<USkeletalMeshComponent>(m_owner->GetComponentByClass(USkeletalMeshComponent::StaticClass()));
 		m_owner->SetActorTickEnabled(false);
 	}
 
-	if (m_sphere != nullptr)
+	if (m_skeleton != nullptr)
 	{
-		m_material = m_sphere->CreateDynamicMaterialInstance(0, m_sphere->GetMaterial(0));
-		m_sphere->SetCollisionProfileName(FName("Trigger"), true);
+		m_material = m_skeleton->CreateDynamicMaterialInstance(0, m_skeleton->GetMaterial(0));
+		m_collision->SetCollisionProfileName(FName("Trigger"), true);
 	}
 
 	if (m_player != nullptr && m_owner != nullptr)
 	{
 		m_isInitalisationDone = true;
 		m_owner->SetActorTickEnabled(true);
+	}
+	ACustomGameMode* gameMode = Cast<ACustomGameMode>(UGameplayStatics::GetGameMode(this));
+	if (gameMode != nullptr)
+	{
+		gameMode->AddBomb(this);
 	}
 }
 
@@ -69,9 +81,7 @@ void UBombHandler::TickComponent(float DeltaTime, ELevelTick TickType, FActorCom
 	{
 		float redValue = (FMath::Sin(GetWorld()->GetTimeSeconds() * 2.0f * PI) + 1.0f) / 2.0f;
 		m_material->SetVectorParameterValue(FName("AdditiveColor"), FLinearColor(redValue, 0.0f, 0.0f));
-		m_sphere->GetStaticMesh()->SetMaterial(0, m_material);
-		float scaleFactor = FMath::Lerp(0.4f, 0.6f, redValue);
-		m_sphere->SetWorldScale3D(FVector(scaleFactor));
+		m_skeleton->SetMaterial(0, m_material);
 	}
 	
 	if (m_timer <= 0)
@@ -82,10 +92,15 @@ void UBombHandler::TickComponent(float DeltaTime, ELevelTick TickType, FActorCom
 
 void UBombHandler::Explode()
 {
+	ACustomGameMode* gameMode = Cast<ACustomGameMode>(UGameplayStatics::GetGameMode(this));
+	if (gameMode != nullptr)
+	{
+		gameMode->RemoveBomb(this);
+	}
 	m_exploding = true;
 	ApplyDestroyEffect();
 	m_player->GiveBackBomb();
-	if (m_sphere->GetCollisionProfileName().IsEqual(FName("Trigger")))
+	if (m_collision->GetCollisionProfileName().IsEqual(FName("Trigger")))
 	{
 		m_player->SetCanPlaceBomb(true);
 	}
@@ -101,7 +116,6 @@ void UBombHandler::ApplyDestroyEffect()
 
 	for (int i = 1; i <= m_power; i++)
 	{
-		UE_LOG(LogTemp, Warning, TEXT("IN"))
 		endTrace = FVector(0, 100.0f, 0) + startTrace;
 		if (!CanSpawnFlames(startTrace, endTrace))
 		{
@@ -175,9 +189,9 @@ bool UBombHandler::CanSpawnFlames(FVector _startTrace, FVector _endTrace)
 				AEnemyHandler* enemyHandler = Cast<AEnemyHandler>(actor);
 				ABonus* bonus = Cast<ABonus>(actor);
 				UBombHandler* bomb = actor->GetComponentByClass<UBombHandler>();
-				ADamageableActor* damageableActor = Cast<ADamageableActor>(actor);
+				AFlames* flames = Cast<AFlames>(actor);
 
-				if (playerControl == nullptr && enemyHandler == nullptr && bonus == nullptr && bomb == nullptr)
+				if (playerControl == nullptr && enemyHandler == nullptr && bonus == nullptr && bomb == nullptr && flames == nullptr)
 				{
 					result = false;
 				}
@@ -201,12 +215,9 @@ void UBombHandler::CheckIfWall(FVector _startTrace, FVector _endTrace)
 			{
 				ADamageableActor* damageableActor = Cast<ADamageableActor>(actor);
 
-				if (damageableActor != nullptr)
+				if (damageableActor != nullptr && damageableActor->Damage())
 				{
-					if (damageableActor->Damage())
-					{
-						GetWorld()->SpawnActor<AActor>(m_flames, _endTrace, FRotator(0, 0, 0));
-					}
+					GetWorld()->SpawnActor<AActor>(m_flames, _endTrace, FRotator(0, 0, 0));
 				}
 			}
 		}
@@ -215,14 +226,14 @@ void UBombHandler::CheckIfWall(FVector _startTrace, FVector _endTrace)
 
 void UBombHandler::OnPlayerLeaveBomb(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex)
 {
-	if (m_sphere != nullptr)
+	if (m_collision != nullptr)
 	{
 		APlayerControl* playerControl = Cast<APlayerControl>(OtherActor);
 
 		if (playerControl != nullptr)
 		{
 			playerControl->SetCanPlaceBomb(true);
-			m_sphere->SetCollisionProfileName(FName("InvisibleWallDynamic"), true);
+			m_collision->SetCollisionProfileName(FName("InvisibleWallDynamic"), true);
 		}
 	}
 }

@@ -34,6 +34,11 @@ void UPauseHUD::NativeConstruct()
     {
         m_buttonPlay->OnClicked.AddDynamic(this, &UPauseHUD::UnPauseGame);
     }
+
+    if (m_buttonQuit != nullptr)
+    {
+        m_buttonQuit->OnClicked.AddDynamic(this, &UPauseHUD::Quit);
+    }
 }
 
 void UPauseHUD::UnPauseGame()
@@ -43,4 +48,8 @@ void UPauseHUD::UnPauseGame()
     {
         playerControl->PauseGame();
     }
+}
+
+void UPauseHUD::Quit()
+{
 }

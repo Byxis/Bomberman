@@ -13,6 +13,7 @@
 #include "Blueprint/UserWidget.h"
 #include "PlayerHUD.h"
 #include "./Bomberman/HUD/PauseHUD.h"
+#include "./Bomberman/HUD/GameoverHUD.h"
 #include <Bomberman/Game/CustomGameInstance.h>
 #include "PlayerControl.generated.h"
 
@@ -34,6 +35,7 @@ public:
 	void MoveForward(float _axis);
 	void MoveRight(float _axis);
 	void SpawnBomb();
+	void Detonatebomb();
 	void GiveBackBomb();
 	void SetCanPlaceBomb(bool _bool);
 	void Damage();
@@ -41,8 +43,13 @@ public:
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 	void BonusBombPower();
 	void BonusBombLimit();
+	void BonusSpeed();
+	void BonusDetonator();
 	void ActualiseScore();
 	void PauseGame();
+	bool IsDead();
+	bool IsPlacingBomb();
+	void SetPlacingBomb(bool _bool);
 
 	virtual void EndPlay(const EEndPlayReason::Type EndPlayReason) override;
 
@@ -55,15 +62,24 @@ private:
 
 	int32 m_maxPlacedBomb = 1;
 	bool m_dead = false;
-	bool m_canMove = true;
 	bool m_canPlaceBomb = true;
+	bool m_isPlacingBomb = false;
+
 	UPROPERTY(Editanywhere)
 	TSubclassOf<UPlayerHUD> m_playerHudClass = nullptr;
 	UPROPERTY()
 	class UPlayerHUD* m_playerHud = nullptr;
+
 	UPROPERTY(Editanywhere)
 	TSubclassOf<UPauseHUD> m_pauseHudClass = nullptr;
 	UPROPERTY()
 	class UPauseHUD* m_pauseHud = nullptr;
+
+
+	UPROPERTY(Editanywhere)
+	TSubclassOf<UGameoverHUD> m_gameOverHudClass = nullptr;
+	UPROPERTY()
+	class UGameoverHUD* m_gameOverHud = nullptr;
+
 	UCustomGameInstance* m_gameInstance = nullptr;
 };

@@ -30,10 +30,11 @@ private:
 	float m_timer = 3.0f;
 	bool m_collidable = true;
 	AActor* m_owner = nullptr;
-	UStaticMeshComponent* m_sphere = nullptr;
+	USkeletalMeshComponent* m_skeleton = nullptr;
 	bool m_isInitalisationDone = false;
 	APlayerControl* m_player = nullptr;
 	UMaterialInstanceDynamic* m_material = nullptr;
+	UBoxComponent* m_collisionExit = nullptr;
 	UBoxComponent* m_collision = nullptr;
 	bool m_exploding = false;
 	UPROPERTY(EditAnywhere, meta = (AllowPrivateAccess = "true"))

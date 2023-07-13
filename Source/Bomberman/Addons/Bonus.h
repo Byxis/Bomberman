@@ -9,7 +9,9 @@ UENUM()
 enum class EBonus : uint8
 {
 	Power,
-	Limit
+	Limit,
+	Speed,
+	Detonator
 };
 
 UCLASS()

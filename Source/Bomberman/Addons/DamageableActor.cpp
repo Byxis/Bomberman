@@ -1,6 +1,7 @@
 #include "DamageableActor.h"
 #include "GameFramework/Character.h"
 #include <Bomberman/Game/CustomGameMode.h>
+#include <Bomberman/Game/CustomGameInstance.h>
 #include "Bonus.h"
 
 ADamageableActor::ADamageableActor()
@@ -25,46 +26,111 @@ void ADamageableActor::BeginPlay()
 	}
 }
 
+std::list<EBonus> ADamageableActor::GetAvailablebonusWithWeight(UCustomGameInstance* _gameInstance)
+{
+	std::list<EBonus> bonusList;
+	if (!_gameInstance->HasMaxedBombLimit() && m_bonusLimit != nullptr)
+	{
+		bonusList.push_front(EBonus::Limit);
+		bonusList.push_front(EBonus::Limit);
+		bonusList.push_front(EBonus::Limit);
+	}
+	if (!_gameInstance->HasMaxedBombPower() && m_bonusPower != nullptr)
+	{
+		bonusList.push_front(EBonus::Power);
+		bonusList.push_front(EBonus::Power);
+		bonusList.push_front(EBonus::Power);
+	}
+	if (!_gameInstance->HasMaxedSpeed() && m_bonusSpeed != nullptr)
+	{
+		bonusList.push_front(EBonus::Speed);
+		bonusList.push_front(EBonus::Speed);
+	}
+	if (!_gameInstance->HasDetonatorBonus() && m_bonusDetonator != nullptr)
+	{
+		bonusList.push_front(EBonus::Detonator);
+	}
+	return bonusList;
+}
+
+void ADamageableActor::SpawnBonus(EBonus bonus)
+{
+	switch (bonus)
+	{
+		default:
+			break;
+		case EBonus::Limit:
+		{
+			AActor* bonusActor = GetWorld()->SpawnActor<AActor>(m_bonusLimit, GetActorLocation(), GetActorRotation());
+			ABonus* bonus = Cast<ABonus>(bonusActor);
+			if (bonus != nullptr)
+			{
+				bonus->SetBonusType(0);
+			}
+			break;
+		}
+		case EBonus::Power:
+		{
+			AActor* bonusActor = GetWorld()->SpawnActor<AActor>(m_bonusPower, GetActorLocation(), GetActorRotation());
+			ABonus* bonus = Cast<ABonus>(bonusActor);
+			if (bonus != nullptr)
+			{
+				bonus->SetBonusType(1);
+			}
+			break;
+		}
+		case EBonus::Speed:
+		{
+			AActor* bonusActor = GetWorld()->SpawnActor<AActor>(m_bonusSpeed, GetActorLocation(), GetActorRotation());
+			ABonus* bonus = Cast<ABonus>(bonusActor);
+			if (bonus != nullptr)
+			{
+				bonus->SetBonusType(2);
+			}
+			break;
+		}
+		case EBonus::Detonator:
+		{
+			AActor* bonusActor = GetWorld()->SpawnActor<AActor>(m_bonusDetonator, GetActorLocation(), GetActorRotation());
+			ABonus* bonus = Cast<ABonus>(bonusActor);
+			if (bonus != nullptr)
+			{
+				bonus->SetBonusType(3);
+			}
+			break;
+		}
+	}
+}
+
 bool ADamageableActor::Damage()
 {
 	m_health--;
 	if (m_health <= 0 && m_isDestroyable)
 	{
-		ACustomGameMode* GameMode = Cast<ACustomGameMode>(UGameplayStatics::GetGameMode(this));
-		if (GameMode != nullptr)
+		ACustomGameMode* gameMode = Cast<ACustomGameMode>(UGameplayStatics::GetGameMode(this));
+		UCustomGameInstance* gameInstance = Cast<UCustomGameInstance>(UGameplayStatics::GetGameInstance(GetWorld()));
+		if (gameMode != nullptr)
 		{
-			GameMode->RemoveWall();
+			gameMode->RemoveWall();
 			int32 random = std::rand() % 100;
-			if (random >= 95 || GameMode->GetNbrOfWalls() <= 0)
+			if (random >= 95 || gameMode->GetNbrOfWalls() <= 0)
 			{
-				if (!GameMode->HasExitSpawned() && m_exit != nullptr)
+				if (!gameMode->HasExitSpawned() && m_exit != nullptr)
 				{
 					GetWorld()->SpawnActor<AActor>(m_exit, GetActorLocation(), GetActorRotation());
-					GameMode->SetExitSpawned(true);
+					gameMode->SetExitSpawned(true);
 				}
 			}
-			else if (random <= 5)
+			else if (random <= 5 && gameInstance != nullptr)
 			{
-				random = std::rand() % 100;
-				if (random <= 49 && m_bonusLimit != nullptr)
+				std::list<EBonus> bonusList = GetAvailablebonusWithWeight(gameInstance);
+				if (bonusList.size() != 0)
 				{
-					AActor* bonusActor = GetWorld()->SpawnActor<AActor>(m_bonusLimit, GetActorLocation(), GetActorRotation());
-					ABonus* bonus = Cast<ABonus>(bonusActor);
-					if (bonus != nullptr)
-					{
-						bonus->SetBonusType(0);
-					}
+					std::list<EBonus>::iterator it = bonusList.begin();
+					std::advance(it, std::rand() % bonusList.size());
+					EBonus bonus = *it;
+					SpawnBonus(bonus);
 				}
-				else if (random >= 50 && m_bonusPower != nullptr)
-				{
-					AActor* bonusActor = GetWorld()->SpawnActor<AActor>(m_bonusPower, GetActorLocation(), GetActorRotation());
-					ABonus* bonus = Cast<ABonus>(bonusActor);
-					if (bonus != nullptr)
-					{
-						bonus->SetBonusType(1);
-					}
-				}
-				
 			}
 		}
 		

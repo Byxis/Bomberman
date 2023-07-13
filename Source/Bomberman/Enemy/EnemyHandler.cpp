@@ -16,7 +16,6 @@ AEnemyHandler::AEnemyHandler(const FObjectInitializer& _objectInitializer)
 	if (m_collision != nullptr)
 	{
 		m_collision->SetRelativeScale3D(FVector(1.2f, 1.2f, 1.0f));
-		m_collision->SetHiddenInGame(true);
 		m_collision->OnComponentBeginOverlap.AddDynamic(this, &AEnemyHandler::OnInteract);
 
 		RootComponent = m_collision;
@@ -70,10 +69,6 @@ void AEnemyHandler::Tick(float DeltaTime)
 			ChangeDirection();
 		}
 	}
-	else if (m_currentDirection == EDirection::East)
-	{
-		ChangeDirection();
-	}
 	SetActorLocation(position);
 }
 
@@ -106,7 +101,7 @@ void AEnemyHandler::OnInteract(UPrimitiveComponent* HitComp, AActor* OtherActor,
 void AEnemyHandler::ChangeDirection()
 {
 	std::list<EDirection> directions;
-	if (IsDirectionAvailable(FVector(-130, 0, 0)))
+	if (IsDirectionAvailable(FVector(-100, 0, 0)))
 	{
 		directions.push_front(EDirection::North);
 		if (m_currentDirection == EDirection::North && m_timer > 0)
@@ -114,7 +109,7 @@ void AEnemyHandler::ChangeDirection()
 			return;
 		}
 	}
-	if (IsDirectionAvailable(FVector(130, 0, 0)))
+	if (IsDirectionAvailable(FVector(100, 0, 0)))
 	{
 		directions.push_front(EDirection::South);
 		if (m_currentDirection == EDirection::South && m_timer > 0)
@@ -122,7 +117,7 @@ void AEnemyHandler::ChangeDirection()
 			return;
 		}
 	}
-	if (IsDirectionAvailable(FVector(0, -130, 0)))
+	if (IsDirectionAvailable(FVector(0, -100, 0)))
 	{
 		directions.push_front(EDirection::West);
 		if (m_currentDirection == EDirection::West && m_timer > 0)
@@ -130,7 +125,7 @@ void AEnemyHandler::ChangeDirection()
 			return;
 		}
 	}
-	if (IsDirectionAvailable(FVector(0, 130, 0)))
+	if (IsDirectionAvailable(FVector(0, 100, 0)))
 	{
 		directions.push_front(EDirection::East);
 		if (m_currentDirection == EDirection::East && m_timer > 0)
@@ -156,17 +151,20 @@ bool AEnemyHandler::IsDirectionAvailable(FVector _direction)
 {
 	FCollisionQueryParams* CQP = new FCollisionQueryParams();
 	CQP->AddIgnoredActor(this);
-	FHitResult* hitResult = new FHitResult();
-	DrawDebugLine(GetWorld(), GetActorLocation(), GetActorLocation() + _direction, FColor(0, 255, 0), false, 2.0f);
-	if (GetWorld()->LineTraceSingleByChannel(*hitResult, GetActorLocation(), GetActorLocation()+_direction, ECC_Visibility, *CQP))
+	TArray<FHitResult> hitResults;
+
+	//DrawDebugLine(GetWorld(), GetActorLocation(), GetActorLocation() + _direction, FColor(0, 255, 0), false, 2.0f);
+	if (GetWorld()->LineTraceMultiByChannel(hitResults, GetActorLocation(), GetActorLocation()+_direction, ECC_OverlapAll_Deprecated, *CQP))
 	{
-		AActor* actor = hitResult->GetActor();
-		if (actor != nullptr)
+		for (FHitResult& hitResult : hitResults)
 		{
-			APlayerControl* playerControl = Cast<APlayerControl>(actor);
-			if (playerControl != nullptr)
-				return true;
-			return false;
+			AActor* actor = hitResult.GetActor();
+			if (actor != nullptr)
+			{
+				APlayerControl* playerControl = Cast<APlayerControl>(actor);
+				if (playerControl == nullptr)
+					return false;
+			}
 		}
 	}
 	return true;

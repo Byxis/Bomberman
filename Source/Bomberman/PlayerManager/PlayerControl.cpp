@@ -9,6 +9,7 @@
 #include "./Bomberman/Bomb/BombHandler.h"
 #include <Bomberman/Game/CustomGameMode.h>
 #include <Bomberman/Game/CustomGameInstance.h>
+#include <Bomberman/HUD/GameoverHUD.h>
 
 APlayerControl::APlayerControl()
 {
@@ -19,7 +20,7 @@ APlayerControl::APlayerControl()
 	bUseControllerRotationYaw = false;
 	bUseControllerRotationRoll = false;
 
-	GetCharacterMovement()->bOrientRotationToMovement = false;
+	GetCharacterMovement()->bOrientRotationToMovement = true;
 	GetCharacterMovement()->RotationRate = FRotator(0.0f, 540.0f, 0.0f);
 
 	SpringArmComp = CreateDefaultSubobject<USpringArmComponent>(TEXT("SpringArmComponent"));
@@ -69,18 +70,22 @@ void APlayerControl::SetupPlayerInputComponent(UInputComponent* PlayerInputCompo
 	Super::SetupPlayerInputComponent(PlayerInputComponent);
 	PlayerInputComponent->BindAxis("MoveRight", this, &APlayerControl::MoveForward);
 	PlayerInputComponent->BindAxis("MoveForward", this, &APlayerControl::MoveRight);
-	PlayerInputComponent->BindAction("Action", IE_Pressed, this, &APlayerControl::SpawnBomb);
+	PlayerInputComponent->BindAction("Action1", IE_Pressed, this, &APlayerControl::SpawnBomb);
 	PlayerInputComponent->BindAction("Pause", IE_Pressed, this, &APlayerControl::PauseGame);
+	PlayerInputComponent->BindAction("Action2", IE_Pressed, this, &APlayerControl::Detonatebomb);
 }
 
 void APlayerControl::MoveForward(float _axis)
 {
-	if (!m_dead && m_canMove)
+	if (!m_dead)
 	{
 		if (_axis > 0.2)
 			_axis = 1;
-		if (_axis < -0.2)
+		else if (_axis < -0.2)
 			_axis = -1;
+		else
+			_axis = 0;
+		_axis *= m_gameInstance->GetSpeed();
 		const FRotator Rotation = Controller->GetControlRotation();
 		const FRotator YawRotation(0, Rotation.Yaw, 0);
 		const FVector Direction = FRotationMatrix(YawRotation).GetUnitAxis(EAxis::X);
@@ -90,12 +95,15 @@ void APlayerControl::MoveForward(float _axis)
 
 void APlayerControl::MoveRight(float _axis)
 {
-	if (!m_dead && m_canMove)
+	if (!m_dead)
 	{
 		if (_axis > 0.2)
 			_axis = 1;
-		if (_axis < -0.2)
+		else if (_axis < -0.2)
 			_axis = -1;
+		else
+			_axis = 0;
+		_axis *= m_gameInstance->GetSpeed();
 		const FRotator Rotation = Controller->GetControlRotation();
 		const FRotator YawRotation(0, Rotation.Yaw, 0);
 		const FVector Direction = FRotationMatrix(YawRotation).GetUnitAxis(EAxis::Y);
@@ -106,7 +114,7 @@ void APlayerControl::MoveRight(float _axis)
 
 void APlayerControl::SpawnBomb()
 {
-	if (m_maxPlacedBomb > 0 && m_canPlaceBomb)
+	if (m_maxPlacedBomb > 0 && m_canPlaceBomb && !m_dead)
 	{
 		const FVector location(FGenericPlatformMath::RoundToInt((GetActorLocation().X - 50) / 100) * 100 + 50,
 			FGenericPlatformMath::RoundToInt((GetActorLocation().Y - 50) / 100) * 100 + 50,
@@ -117,6 +125,7 @@ void APlayerControl::SpawnBomb()
 		AActor* spawnedbomb = GetWorld()->SpawnActor<AActor>(m_bomb, location, rotation);
 		if (spawnedbomb != nullptr)
 		{
+			SetPlacingBomb(true);
 			SetCanPlaceBomb(false);
 			GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Red, message);
 			UBombHandler* bombHandler = spawnedbomb->GetComponentByClass<UBombHandler>();
@@ -125,6 +134,21 @@ void APlayerControl::SpawnBomb()
 
 			m_maxPlacedBomb--;
 		}
+	}
+}
+void APlayerControl::Detonatebomb()
+{
+	if (m_gameInstance->HasDetonatorBonus() && !m_dead)
+	{
+		ACustomGameMode* gameMode = Cast<ACustomGameMode>(UGameplayStatics::GetGameMode(this));
+		if (gameMode != nullptr)
+		{
+			for (UBombHandler* bomb : gameMode->GetAllBombs())
+			{
+				bomb->Explode();
+			}
+		}
+		
 	}
 }
 
@@ -140,7 +164,20 @@ void APlayerControl::SetCanPlaceBomb(bool _bool)
 
 void APlayerControl::Damage()
 {
-	Destroy();
+	if (!m_dead)
+	{
+		m_dead = true;
+		m_gameOverHud = CreateWidget<UGameoverHUD>(GetGameInstance(), m_gameOverHudClass, FName("GameoverWidget"));
+
+		m_playerHud->RemoveFromParent();
+		//m_pauseHud->RemoveFromParent();
+
+		if (m_gameOverHud != nullptr)
+		{
+			m_gameOverHud->AddToViewport();
+			GetWorld()->GetFirstPlayerController()->SetShowMouseCursor(true);
+		}
+	}
 }
 
 
@@ -153,6 +190,16 @@ void APlayerControl::BonusBombLimit()
 {
 	m_gameInstance->AddBombLimit(1);
 	m_maxPlacedBomb++;
+}
+
+void APlayerControl::BonusSpeed()
+{
+	m_gameInstance->AddSpeed(0.5f);
+}
+
+void APlayerControl::BonusDetonator()
+{
+	m_gameInstance->SetDetonatorBonus(true);
 }
 
 void APlayerControl::ActualiseScore()
@@ -172,6 +219,7 @@ void APlayerControl::ActualiseScore()
 
 void APlayerControl::PauseGame()
 {
+	UE_LOG(LogTemp, Warning, TEXT("Pause menu"))
 	ACustomGameMode* gameMode = Cast<ACustomGameMode>(UGameplayStatics::GetGameMode(this));
 	if (gameMode != nullptr && m_playerHud != nullptr && m_pauseHud != nullptr)
 	{
@@ -198,4 +246,19 @@ void APlayerControl::PauseGame()
 			GetWorld()->GetFirstPlayerController()->SetShowMouseCursor(false);
 		}
 	}
+}
+
+bool APlayerControl::IsDead()
+{
+	return m_dead;
+}
+
+bool APlayerControl::IsPlacingBomb()
+{
+	return m_isPlacingBomb;
+}
+
+void APlayerControl::SetPlacingBomb(bool _bool)
+{
+	m_isPlacingBomb = _bool;
 }

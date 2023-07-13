@@ -1,5 +1,3 @@
-// Fill out your copyright notice in the Description page of Project Settings.
-
 #pragma once
 
 #include "CoreMinimal.h"
@@ -8,9 +6,6 @@
 #include "Components/Button.h"
 #include "PauseHUD.generated.h"
 
-/**
- * 
- */
 UCLASS()
 class BOMBERMAN_API UPauseHUD : public UUserWidget
 {
@@ -20,15 +15,17 @@ public:
 	void SetScore(int32 _score);
 
 	UPROPERTY(EditAnywhere, meta = (BindWidget))
-		class UTextBlock* m_scoreText = nullptr;
+	class UTextBlock* m_scoreText = nullptr;
 	UPROPERTY(EditAnywhere, meta = (BindWidget))
-		class UButton* m_buttonPlay = nullptr;
+	class UButton* m_buttonPlay = nullptr;
 	UPROPERTY(EditAnywhere, meta = (BindWidget))
-		class UButton* m_buttonSettings = nullptr;
+	class UButton* m_buttonSettings = nullptr;
 	UPROPERTY(EditAnywhere, meta = (BindWidget))
-		class UButton* m_buttonQuit = nullptr;
+	class UButton* m_buttonQuit = nullptr;
 	UFUNCTION()
 	void UnPauseGame();
+	UFUNCTION()
+	void Quit();
 
 protected:
 	virtual void NativeConstruct() override;

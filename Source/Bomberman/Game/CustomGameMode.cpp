@@ -8,9 +8,9 @@
 ACustomGameMode::ACustomGameMode()
 {
 	GameStateClass = ACustomGameState::StaticClass();
-	levels.Add("Level_1");
-	levels.Add("Level_2");
-	levels.Add("Level_3");
+	m_levels.Add("Level_1");
+	m_levels.Add("Level_2");
+	m_levels.Add("Level_3");
 }
 
 void ACustomGameMode::BeginPlay()
@@ -26,13 +26,13 @@ void ACustomGameMode::NextLevel()
 	FString current = GetWorld()->GetMapName();
 	current.RemoveFromStart(GetWorld()->StreamingLevelsPrefix);
 
-	for (int i = 0; i < levels.Num(); i++)
+	for (int i = 0; i < m_levels.Num(); i++)
 	{
-		if (current == levels[i])
+		if (current == m_levels[i])
 		{
-			if (i <= levels.Num() - 2)
+			if (i <= m_levels.Num() - 2)
 			{
-				UGameplayStatics::OpenLevel(GetWorld(), FName(levels[i + 1]));
+				UGameplayStatics::OpenLevel(GetWorld(), FName(m_levels[i + 1]));
 				CountWalls();
 				SetExitSpawned(false);
 			}
@@ -80,4 +80,19 @@ bool ACustomGameMode::HasExitSpawned()
 void ACustomGameMode::SetExitSpawned(bool _bool)
 {
 	m_hasExitSpawned = _bool;
+}
+
+void ACustomGameMode::AddBomb(UBombHandler* _bomb)
+{
+	m_bombs.Add(_bomb);
+}
+
+void ACustomGameMode::RemoveBomb(UBombHandler* _bomb)
+{
+	m_bombs.Remove(_bomb);
+}
+
+TArray<UBombHandler*> ACustomGameMode::GetAllBombs()
+{
+	return m_bombs;
 }

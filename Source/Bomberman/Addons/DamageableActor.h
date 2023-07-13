@@ -2,6 +2,9 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
+#include <stdlib.h>
+#include "Bonus.h"
+#include <Bomberman/Game/CustomGameInstance.h>
 #include "DamageableActor.generated.h"
 
 UCLASS()
@@ -30,7 +33,14 @@ private:
 	TSubclassOf<AActor> m_bonusPower = nullptr;
 	UPROPERTY(EditAnywhere, meta = (AllowPrivateAccess = "true"))
 	TSubclassOf<AActor> m_bonusLimit = nullptr;
+	UPROPERTY(EditAnywhere, meta = (AllowPrivateAccess = "true"))
+	TSubclassOf<AActor> m_bonusSpeed = nullptr;
+	UPROPERTY(EditAnywhere, meta = (AllowPrivateAccess = "true"))
+	TSubclassOf<AActor> m_bonusDetonator = nullptr;
 
 	UPROPERTY(EditAnywhere, meta = (AllowPrivateAccess = "true"))
 	TSubclassOf<AActor> m_exit = nullptr;
+
+	std::list<EBonus> GetAvailablebonusWithWeight(UCustomGameInstance* _gameInstance);
+	void SpawnBonus(EBonus bonus);
 };

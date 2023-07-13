@@ -39,6 +39,12 @@ void ABonus::OnPlayerTakeBonus(class UPrimitiveComponent* HitComp, class AActor*
 	case EBonus::Limit:
 		playerControl->BonusBombLimit();
 		break;
+	case EBonus::Speed:
+		playerControl->BonusSpeed();
+		break;
+	case EBonus::Detonator:
+		playerControl->BonusDetonator();
+		break;
 	default:
 		break;
 	}
@@ -55,13 +61,19 @@ void ABonus::Damage()
 
 void ABonus::SetBonusType(int32 _type)
 {
-	switch (_type % 2)
+	switch (_type % 4)
 	{
 	default:
 		m_bonusType = EBonus::Limit;
 		break;
 	case 1:
 		m_bonusType = EBonus::Power;
+		break;
+	case 2:
+		m_bonusType = EBonus::Speed;
+		break;
+	case 3:
+		m_bonusType = EBonus::Detonator;
 		break;
 	}
 }
