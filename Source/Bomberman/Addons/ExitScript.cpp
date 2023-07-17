@@ -20,11 +20,11 @@ AExitScript::AExitScript(const FObjectInitializer& _objectInitializer)
 
 void AExitScript::OnPlayerEnterExit(class UPrimitiveComponent* HitComp, class AActor* OtherActor, class UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
-	ACustomGameMode* GameMode = Cast<ACustomGameMode>(UGameplayStatics::GetGameMode(this));
+	ACustomGameMode* gameMode = Cast<ACustomGameMode>(UGameplayStatics::GetGameMode(this));
 	APlayerControl* playerControl = Cast<APlayerControl>(OtherActor);
-	if (GameMode && playerControl != nullptr)
+	if (gameMode != nullptr && gameMode->IsLevelFinished() && playerControl != nullptr)
 	{
-		GameMode->NextLevel();
+		gameMode->NextLevel();
 	}
 }
 

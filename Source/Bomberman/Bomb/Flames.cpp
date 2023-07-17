@@ -56,6 +56,11 @@ void AFlames::OnEntityInteract(UPrimitiveComponent* HitComp, AActor* OtherActor,
 		AEnemyHandler* enemy = Cast<AEnemyHandler>(OtherActor);
 		if (enemy != nullptr)
 		{
+			ACustomGameMode* gameMode = Cast<ACustomGameMode>(UGameplayStatics::GetGameMode(this));
+			if (gameMode != nullptr)
+			{
+				gameMode->KillEnemy();
+			}
 			enemy->Damage();
 		}
 		UBombHandler* bomb = OtherActor->GetComponentByClass<UBombHandler>();

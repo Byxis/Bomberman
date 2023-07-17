@@ -14,7 +14,9 @@
 #include "PlayerHUD.h"
 #include "./Bomberman/HUD/PauseHUD.h"
 #include "./Bomberman/HUD/GameoverHUD.h"
+#include "./Bomberman/HUD/MainmenuHUD.h"
 #include <Bomberman/Game/CustomGameInstance.h>
+#include <Bomberman/Game/CustomGameMode.h>
 #include "PlayerControl.generated.h"
 
 UCLASS()
@@ -47,9 +49,12 @@ public:
 	void BonusDetonator();
 	void ActualiseScore();
 	void PauseGame();
+	void OpenMainMenu();
 	bool IsDead();
 	bool IsPlacingBomb();
 	void SetPlacingBomb(bool _bool);
+	UFUNCTION()
+		void OnInteract(UPrimitiveComponent* HitComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
 
 	virtual void EndPlay(const EEndPlayReason::Type EndPlayReason) override;
 
@@ -75,11 +80,16 @@ private:
 	UPROPERTY()
 	class UPauseHUD* m_pauseHud = nullptr;
 
-
 	UPROPERTY(Editanywhere)
 	TSubclassOf<UGameoverHUD> m_gameOverHudClass = nullptr;
 	UPROPERTY()
 	class UGameoverHUD* m_gameOverHud = nullptr;
 
+	UPROPERTY(Editanywhere)
+	TSubclassOf<UMainmenuHUD> m_mainMenuHudClass = nullptr;
+	UPROPERTY()
+	class UMainmenuHUD* m_mainMenuHud = nullptr;
+
 	UCustomGameInstance* m_gameInstance = nullptr;
+	ACustomGameMode* m_gameMode = nullptr;
 };

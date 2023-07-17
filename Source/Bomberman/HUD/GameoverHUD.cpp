@@ -3,6 +3,7 @@
 #include <string>
 #include "./Bomberman/PlayerManager/PlayerControl.h"
 #include <Bomberman/Game/CustomGameInstance.h>
+#include "Components/EditableTextBox.h"
 #include "Kismet/GameplayStatics.h"
 
 void UGameoverHUD::NativeConstruct()
@@ -46,15 +47,16 @@ void UGameoverHUD::SetScore(int32 _score)
 
 void UGameoverHUD::SaveScore()
 {
-    if (m_saveText != nullptr && !m_isSaved)
+    UCustomGameInstance* gameInstance = Cast<UCustomGameInstance>(UGameplayStatics::GetGameInstance(GetWorld()));
+    if (m_saveText != nullptr && !m_isSaved && gameInstance != nullptr)
     {
-        //TODO: save score
         m_saveText->SetText(FText::FromString("Score saved !"));
         m_isSaved = true;
+        gameInstance->AddToLeaderboard(m_name->GetText().ToString());
     }
 }
 
 void UGameoverHUD::Quit()
 {
-
+    UGameplayStatics::OpenLevel(GetWorld(), "Level_0");
 }

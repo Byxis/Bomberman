@@ -2,8 +2,10 @@
 
 #include "CoreMinimal.h"
 #include "Engine/GameInstance.h"
+#include "CustomGameSave.h"
+#include "Sound/SoundCue.h"
+#include <Bomberman/Game/CustomGameMode.h>
 #include "CustomGameInstance.generated.h"
-
 
 UCLASS()
 class BOMBERMAN_API UCustomGameInstance : public UGameInstance
@@ -34,6 +36,13 @@ public:
 	bool HasDetonatorBonus();
 	void SetDetonatorBonus(bool _detonator);
 
+	void ResetAll();
+	void AddToLeaderboard(FString _name);
+	void GetLeaderboard(TArray<int32>& _score, TArray<FString>& _name);
+	void LoadLeaderboard();
+	void SaveLeaderboard();
+	void PlayMusic(EGameState _state);
+
 private:
 	int32 m_bombLimit = 1;
 	int32 m_maxBombLimit = 8;
@@ -44,4 +53,12 @@ private:
 	float m_maxSpeed = 2.4;
 	bool m_detonator = false;
 
+	UPROPERTY(EditAnywhere, meta = (AllowPrivateAccess = "true"))
+	USoundCue* m_menuMusic = nullptr;
+	UPROPERTY(EditAnywhere, meta = (AllowPrivateAccess = "true"))
+	USoundCue* m_levelMusic = nullptr;
+	UPROPERTY(EditAnywhere, meta = (AllowPrivateAccess = "true"))
+	USoundCue* m_secretLevelMusic = nullptr;
+
+	UCustomGameSave* m_gameSave = nullptr;
 };

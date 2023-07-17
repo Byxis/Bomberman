@@ -26,6 +26,12 @@ void AEnemyHandler::BeginPlay()
 {
 	Super::BeginPlay();
 	ChangeDirection();
+
+	ACustomGameMode* gameMode = Cast<ACustomGameMode>(UGameplayStatics::GetGameMode(this));
+	if (gameMode != nullptr)
+	{
+		gameMode->AddEnemy();
+	}
 }
 
 void AEnemyHandler::Tick(float DeltaTime)
@@ -84,7 +90,6 @@ void AEnemyHandler::Damage()
 
 void AEnemyHandler::OnInteract(UPrimitiveComponent* HitComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
-	UE_LOG(LogTemp, Warning, TEXT("COLLISION"))
 	APlayerControl* playerControl = Cast<APlayerControl>(OtherActor);
 	UBombHandler* bomb = Cast<UBombHandler>(OtherActor);
 

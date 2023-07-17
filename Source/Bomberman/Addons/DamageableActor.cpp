@@ -24,6 +24,11 @@ void ADamageableActor::BeginPlay()
 			m_mesh->SetStaticMesh(m_destroyedBricks);
 		}
 	}
+	ACustomGameMode* gameMode = Cast<ACustomGameMode>(UGameplayStatics::GetGameMode(this));
+	if (gameMode != nullptr)
+	{
+		gameMode->AddWall();
+	}
 }
 
 std::list<EBonus> ADamageableActor::GetAvailablebonusWithWeight(UCustomGameInstance* _gameInstance)
@@ -109,19 +114,19 @@ bool ADamageableActor::Damage()
 	{
 		ACustomGameMode* gameMode = Cast<ACustomGameMode>(UGameplayStatics::GetGameMode(this));
 		UCustomGameInstance* gameInstance = Cast<UCustomGameInstance>(UGameplayStatics::GetGameInstance(GetWorld()));
-		if (gameMode != nullptr)
+		if (gameMode != nullptr && gameInstance != nullptr)
 		{
 			gameMode->RemoveWall();
 			int32 random = std::rand() % 100;
-			if (random >= 95 || gameMode->GetNbrOfWalls() <= 0)
+			if ((random >= 95 || gameMode->GetNbrOfWalls() <= 0) && !gameMode->HasExitSpawned())
 			{
-				if (!gameMode->HasExitSpawned() && m_exit != nullptr)
+				if (m_exit != nullptr)
 				{
 					GetWorld()->SpawnActor<AActor>(m_exit, GetActorLocation(), GetActorRotation());
 					gameMode->SetExitSpawned(true);
 				}
 			}
-			else if (random <= 5 && gameInstance != nullptr)
+			else if ((random <= 5 || gameMode->GetNbrOfWalls() <= gameMode->GetRemainingBonuses()) && gameMode->CanSpawnBonus())
 			{
 				std::list<EBonus> bonusList = GetAvailablebonusWithWeight(gameInstance);
 				if (bonusList.size() != 0)
@@ -130,6 +135,7 @@ bool ADamageableActor::Damage()
 					std::advance(it, std::rand() % bonusList.size());
 					EBonus bonus = *it;
 					SpawnBonus(bonus);
+					gameMode->AddSpawnedBonus(1);
 				}
 			}
 		}

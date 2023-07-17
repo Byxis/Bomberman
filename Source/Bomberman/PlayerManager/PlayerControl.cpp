@@ -10,6 +10,7 @@
 #include <Bomberman/Game/CustomGameMode.h>
 #include <Bomberman/Game/CustomGameInstance.h>
 #include <Bomberman/HUD/GameoverHUD.h>
+#include <Bomberman/Enemy/EnemyHandler.h>
 
 APlayerControl::APlayerControl()
 {
@@ -32,20 +33,33 @@ APlayerControl::APlayerControl()
 	CameraComp = CreateDefaultSubobject<UCameraComponent>(TEXT("CameraComponent"));
 	CameraComp->SetupAttachment(SpringArmComp, USpringArmComponent::SocketName);
 	SpringArmComp->bUsePawnControlRotation = false;
+	
+	GetComponentByClass<UCapsuleComponent>()->OnComponentBeginOverlap.AddDynamic(this, &APlayerControl::OnInteract);
 }
 
 void APlayerControl::BeginPlay()
 {
 	Super::BeginPlay();
-	m_playerHud = CreateWidget<UPlayerHUD>(GetGameInstance(), m_playerHudClass, FName("PlayerWidget"));
-	if (m_playerHud != nullptr)
-	{
-		m_playerHud->AddToViewport();
-	}
-	ActualiseScore();
-	m_gameInstance = Cast<UCustomGameInstance>(UGameplayStatics::GetGameInstance(GetWorld()));
 
+	m_gameMode = Cast<ACustomGameMode>(UGameplayStatics::GetGameMode(this));
+	m_gameInstance = Cast<UCustomGameInstance>(UGameplayStatics::GetGameInstance(GetWorld()));
 	m_maxPlacedBomb = m_gameInstance->GetBombLimit();
+
+	if (m_gameMode == nullptr)
+		return;
+	if (m_gameMode->GetCurrentGameState() == EGameState::Menu)
+	{
+		OpenMainMenu();
+	}
+	else if (m_gameMode->GetCurrentGameState() == EGameState::Playing)
+	{
+		m_playerHud = CreateWidget<UPlayerHUD>(GetGameInstance(), m_playerHudClass, FName("PlayerWidget"));
+		if (m_playerHud != nullptr)
+		{
+			m_playerHud->AddToViewport();
+		}
+		ActualiseScore();
+	}
 }
 
 void APlayerControl::EndPlay(const EEndPlayReason::Type EndPlayReason)
@@ -140,10 +154,9 @@ void APlayerControl::Detonatebomb()
 {
 	if (m_gameInstance->HasDetonatorBonus() && !m_dead)
 	{
-		ACustomGameMode* gameMode = Cast<ACustomGameMode>(UGameplayStatics::GetGameMode(this));
-		if (gameMode != nullptr)
+		if (m_gameMode != nullptr)
 		{
-			for (UBombHandler* bomb : gameMode->GetAllBombs())
+			for (UBombHandler* bomb : m_gameMode->GetAllBombs())
 			{
 				bomb->Explode();
 			}
@@ -219,13 +232,13 @@ void APlayerControl::ActualiseScore()
 
 void APlayerControl::PauseGame()
 {
-	UE_LOG(LogTemp, Warning, TEXT("Pause menu"))
-	ACustomGameMode* gameMode = Cast<ACustomGameMode>(UGameplayStatics::GetGameMode(this));
-	if (gameMode != nullptr && m_playerHud != nullptr && m_pauseHud != nullptr)
+	m_gameMode = Cast<ACustomGameMode>(UGameplayStatics::GetGameMode(this));
+	if (m_gameMode != nullptr && m_playerHudClass != nullptr && m_pauseHudClass != nullptr)
 	{
-		if (gameMode->GetCurrentGameState() == EGameState::Playing)
+		if (m_gameMode->GetCurrentGameState() == EGameState::Playing)
 		{
-			gameMode->SetCurrentGameState(EGameState::PauseMenu);
+			UE_LOG(LogTemp, Warning, TEXT("2"))
+				m_gameMode->SetCurrentGameState(EGameState::PauseMenu);
 			m_playerHud->RemoveFromParent();
 			
 			m_pauseHud = CreateWidget<UPauseHUD>(GetGameInstance(), m_pauseHudClass, FName("PauseWidget"));
@@ -234,9 +247,9 @@ void APlayerControl::PauseGame()
 			GetWorld()->GetFirstPlayerController()->SetPause(true);
 			GetWorld()->GetFirstPlayerController()->SetShowMouseCursor(true);
 		}
-		else if (gameMode->GetCurrentGameState() == EGameState::PauseMenu)
+		else if (m_gameMode->GetCurrentGameState() == EGameState::PauseMenu)
 		{
-			gameMode->SetCurrentGameState(EGameState::Playing);
+			m_gameMode->SetCurrentGameState(EGameState::Playing);
 			m_pauseHud->RemoveFromParent();
 
 			m_playerHud = CreateWidget<UPlayerHUD>(GetGameInstance(), m_playerHudClass, FName("PlayerWidget"));
@@ -246,6 +259,15 @@ void APlayerControl::PauseGame()
 			GetWorld()->GetFirstPlayerController()->SetShowMouseCursor(false);
 		}
 	}
+}
+
+void APlayerControl::OpenMainMenu()
+{
+	m_mainMenuHud = CreateWidget<UMainmenuHUD>(GetGameInstance(), m_mainMenuHudClass, FName("MainMenuwidget"));
+
+	m_mainMenuHud->AddToViewport();
+	GetWorld()->GetFirstPlayerController()->SetPause(true);
+	GetWorld()->GetFirstPlayerController()->SetShowMouseCursor(true);
 }
 
 bool APlayerControl::IsDead()
@@ -261,4 +283,11 @@ bool APlayerControl::IsPlacingBomb()
 void APlayerControl::SetPlacingBomb(bool _bool)
 {
 	m_isPlacingBomb = _bool;
+}
+
+void APlayerControl::OnInteract(UPrimitiveComponent* HitComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
+{
+	AEnemyHandler* enemy = Cast< AEnemyHandler>(OtherActor);
+	if (enemy != nullptr)
+		Damage();
 }

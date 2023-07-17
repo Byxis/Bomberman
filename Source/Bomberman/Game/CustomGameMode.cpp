@@ -8,6 +8,10 @@
 ACustomGameMode::ACustomGameMode()
 {
 	GameStateClass = ACustomGameState::StaticClass();
+	int32 random = 1+std::rand() % 2;
+	m_maxBonusRound = random;
+	m_spawnedBonus = 0;
+
 	m_levels.Add("Level_1");
 	m_levels.Add("Level_2");
 	m_levels.Add("Level_3");
@@ -15,9 +19,20 @@ ACustomGameMode::ACustomGameMode()
 
 void ACustomGameMode::BeginPlay()
 {
+	if (UGameplayStatics::GetCurrentLevelName(GetWorld(), true).Equals("Level_0"))
+	{
+		SetCurrentGameState(EGameState::Menu);
+	}
+	else
+	{
+		SetCurrentGameState(EGameState::Playing);
+	}
+
+	UCustomGameSave* m_gameSave = Cast<UCustomGameSave>(UGameplayStatics::CreateSaveGameObject(UCustomGameSave::StaticClass()));
+	UCustomGameInstance* gameInstance = Cast<UCustomGameInstance>(UGameplayStatics::GetGameInstance(UCustomGameInstance::StaticClass()));
+	if (gameInstance != nullptr)
+		gameInstance->PlayMusic(m_currentGameState);
 	Super::BeginPlay();
-	SetCurrentGameState(EGameState::Playing);
-	CountWalls();
 }
 
 void ACustomGameMode::NextLevel()
@@ -33,7 +48,6 @@ void ACustomGameMode::NextLevel()
 			if (i <= m_levels.Num() - 2)
 			{
 				UGameplayStatics::OpenLevel(GetWorld(), FName(m_levels[i + 1]));
-				CountWalls();
 				SetExitSpawned(false);
 			}
 		}
@@ -42,9 +56,12 @@ void ACustomGameMode::NextLevel()
 
 int32 ACustomGameMode::GetNbrOfWalls()
 {
-	FString message = FString::Printf(TEXT("Walls: %f"), m_nbrWalls);
-	GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Yellow, message);
 	return m_nbrWalls;
+}
+
+void ACustomGameMode::AddWall()
+{
+	m_nbrWalls += 1;
 }
 
 void ACustomGameMode::RemoveWall()
@@ -60,17 +77,6 @@ void ACustomGameMode::SetCurrentGameState(EGameState _newState)
 EGameState ACustomGameMode::GetCurrentGameState() const
 {
 	return m_currentGameState;
-}
-void ACustomGameMode::CountWalls()
-{
-	TArray<AActor*> walls;
-	UGameplayStatics::GetAllActorsOfClass(GetWorld(), ADamageableActor::StaticClass(), walls);
-	int count = 0;
-	for (AActor* wall : walls)
-	{
-		count += 1;
-	}
-	m_nbrWalls = count;
 }
 
 bool ACustomGameMode::HasExitSpawned()
@@ -95,4 +101,34 @@ void ACustomGameMode::RemoveBomb(UBombHandler* _bomb)
 TArray<UBombHandler*> ACustomGameMode::GetAllBombs()
 {
 	return m_bombs;
+}
+
+bool ACustomGameMode::CanSpawnBonus()
+{
+	return m_spawnedBonus < m_maxBonusRound;
+}
+
+void ACustomGameMode::AddSpawnedBonus(int _i)
+{
+	m_spawnedBonus += _i;
+}
+
+bool ACustomGameMode::IsLevelFinished()
+{
+	return m_killedEnemies >= m_maxKilledEnemies;
+}
+
+void ACustomGameMode::AddEnemy()
+{
+	m_maxKilledEnemies += 1;
+}
+
+void ACustomGameMode::KillEnemy()
+{
+	m_killedEnemies += 1;
+}
+
+int ACustomGameMode::GetRemainingBonuses()
+{
+	return m_maxBonusRound- m_spawnedBonus;
 }

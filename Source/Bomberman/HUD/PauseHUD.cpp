@@ -52,4 +52,5 @@ void UPauseHUD::UnPauseGame()
 
 void UPauseHUD::Quit()
 {
+    UGameplayStatics::OpenLevel(GetWorld(), "Level_0");
 }

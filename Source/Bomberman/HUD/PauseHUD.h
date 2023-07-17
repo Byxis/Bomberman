@@ -22,6 +22,7 @@ public:
 	class UButton* m_buttonSettings = nullptr;
 	UPROPERTY(EditAnywhere, meta = (BindWidget))
 	class UButton* m_buttonQuit = nullptr;
+
 	UFUNCTION()
 	void UnPauseGame();
 	UFUNCTION()
