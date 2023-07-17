@@ -2,8 +2,6 @@
 #include <Bomberman/PlayerManager/PlayerControl.h>
 #include <Kismet/GameplayStatics.h>
 
-#pragma optimize("", off)
-
 UCustomGameInstance::UCustomGameInstance()
 {
 }
