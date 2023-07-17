@@ -60,5 +60,4 @@ private:
 	int m_maxKilledEnemies = 0;
 	int m_killedEnemies = 0;
 	bool m_hasExitSpawned = false;
-
 };

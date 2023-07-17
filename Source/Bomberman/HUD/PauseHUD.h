@@ -13,6 +13,10 @@ class BOMBERMAN_API UPauseHUD : public UUserWidget
 
 public:
 	void SetScore(int32 _score);
+	UFUNCTION()
+	void UnPauseGame();
+	UFUNCTION()
+	void Quit();
 
 	UPROPERTY(EditAnywhere, meta = (BindWidget))
 	class UTextBlock* m_scoreText = nullptr;
@@ -22,11 +26,6 @@ public:
 	class UButton* m_buttonSettings = nullptr;
 	UPROPERTY(EditAnywhere, meta = (BindWidget))
 	class UButton* m_buttonQuit = nullptr;
-
-	UFUNCTION()
-	void UnPauseGame();
-	UFUNCTION()
-	void Quit();
 
 protected:
 	virtual void NativeConstruct() override;

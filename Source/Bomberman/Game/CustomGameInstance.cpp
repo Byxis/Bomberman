@@ -3,8 +3,7 @@
 #include <Kismet/GameplayStatics.h>
 
 UCustomGameInstance::UCustomGameInstance()
-{
-}
+{}
 
 void UCustomGameInstance::Init()
 {

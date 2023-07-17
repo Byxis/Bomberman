@@ -158,7 +158,6 @@ bool AEnemyHandler::IsDirectionAvailable(FVector _direction)
 	CQP->AddIgnoredActor(this);
 	TArray<FHitResult> hitResults;
 
-	//DrawDebugLine(GetWorld(), GetActorLocation(), GetActorLocation() + _direction, FColor(0, 255, 0), false, 2.0f);
 	if (GetWorld()->LineTraceMultiByChannel(hitResults, GetActorLocation(), GetActorLocation()+_direction, ECC_OverlapAll_Deprecated, *CQP))
 	{
 		for (FHitResult& hitResult : hitResults)

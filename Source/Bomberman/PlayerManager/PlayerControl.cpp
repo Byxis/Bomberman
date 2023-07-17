@@ -161,7 +161,6 @@ void APlayerControl::Detonatebomb()
 				bomb->Explode();
 			}
 		}
-		
 	}
 }
 
@@ -183,7 +182,6 @@ void APlayerControl::Damage()
 		m_gameOverHud = CreateWidget<UGameoverHUD>(GetGameInstance(), m_gameOverHudClass, FName("GameoverWidget"));
 
 		m_playerHud->RemoveFromParent();
-		//m_pauseHud->RemoveFromParent();
 
 		if (m_gameOverHud != nullptr)
 		{

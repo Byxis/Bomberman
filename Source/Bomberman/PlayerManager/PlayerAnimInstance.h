@@ -23,6 +23,7 @@ protected:
 	
 
 private:
-	APlayerControl* m_player = nullptr;
 	void UpdateAnimationProperties();
+
+	APlayerControl* m_player = nullptr;
 };

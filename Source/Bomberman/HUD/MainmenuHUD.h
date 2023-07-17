@@ -18,24 +18,25 @@ public:
 	class UButton* m_buttonSettings = nullptr;
 	UPROPERTY(EditAnywhere, meta = (BindWidget))
 	class UButton* m_buttonQuit = nullptr;
+
 	UPROPERTY(EditAnywhere, meta = (BindWidget))
 	class UTextBlock* m_score1 = nullptr;
 	UPROPERTY(EditAnywhere, meta = (BindWidget))
-		class UTextBlock* m_score2 = nullptr;
+	class UTextBlock* m_score2 = nullptr;
 	UPROPERTY(EditAnywhere, meta = (BindWidget))
-		class UTextBlock* m_score3 = nullptr;
+	class UTextBlock* m_score3 = nullptr;
 	UPROPERTY(EditAnywhere, meta = (BindWidget))
-		class UTextBlock* m_score4 = nullptr;
+	class UTextBlock* m_score4 = nullptr;
 	UPROPERTY(EditAnywhere, meta = (BindWidget))
-		class UTextBlock* m_score5 = nullptr;
+	class UTextBlock* m_score5 = nullptr;
 	UPROPERTY(EditAnywhere, meta = (BindWidget))
-		class UTextBlock* m_score6 = nullptr;
+	class UTextBlock* m_score6 = nullptr;
 	UPROPERTY(EditAnywhere, meta = (BindWidget))
-		class UTextBlock* m_score7 = nullptr;
+	class UTextBlock* m_score7 = nullptr;
 	UPROPERTY(EditAnywhere, meta = (BindWidget))
-		class UTextBlock* m_score8 = nullptr;
+	class UTextBlock* m_score8 = nullptr;
 	UPROPERTY(EditAnywhere, meta = (BindWidget))
-		class UTextBlock* m_score9 = nullptr;
+	class UTextBlock* m_score9 = nullptr;
 
 	UFUNCTION()
 	void StartPlaying();

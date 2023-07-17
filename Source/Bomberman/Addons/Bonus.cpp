@@ -48,6 +48,7 @@ void ABonus::OnPlayerTakeBonus(class UPrimitiveComponent* HitComp, class AActor*
 	default:
 		break;
 	}
+
 	Destroy();
 }
 

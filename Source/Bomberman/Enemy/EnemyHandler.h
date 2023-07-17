@@ -17,7 +17,6 @@ public:
 	UFUNCTION()
 	void OnInteract(class UPrimitiveComponent* HitComp, class AActor* OtherActor, class UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
 
-
 protected:
 	virtual void BeginPlay() override;
 
@@ -30,6 +29,7 @@ private:
 		West,
 		None
 	};
+
 	float m_speed = 200.0f;
 	UBoxComponent* m_collision = nullptr;
 	EDirection m_currentDirection = EDirection::South;

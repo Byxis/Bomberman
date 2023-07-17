@@ -2,8 +2,7 @@
 
 
 UCustomGameSave::UCustomGameSave()
-{
-}
+{}
 
 void UCustomGameSave::DefaultLeaderboard()
 {

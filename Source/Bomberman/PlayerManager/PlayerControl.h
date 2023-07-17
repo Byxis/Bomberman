@@ -30,7 +30,6 @@ public:
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera)
 	class USpringArmComponent* SpringArmComp = nullptr;
-
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera)
 	class UCameraComponent* CameraComp = nullptr;
 
@@ -54,7 +53,7 @@ public:
 	bool IsPlacingBomb();
 	void SetPlacingBomb(bool _bool);
 	UFUNCTION()
-		void OnInteract(UPrimitiveComponent* HitComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
+	void OnInteract(UPrimitiveComponent* HitComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
 
 	virtual void EndPlay(const EEndPlayReason::Type EndPlayReason) override;
 

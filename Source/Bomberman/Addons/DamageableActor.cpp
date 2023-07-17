@@ -5,9 +5,7 @@
 #include "Bonus.h"
 
 ADamageableActor::ADamageableActor()
-{
-
-}
+{}
 
 void ADamageableActor::BeginPlay()
 {
@@ -114,6 +112,7 @@ bool ADamageableActor::Damage()
 	{
 		ACustomGameMode* gameMode = Cast<ACustomGameMode>(UGameplayStatics::GetGameMode(this));
 		UCustomGameInstance* gameInstance = Cast<UCustomGameInstance>(UGameplayStatics::GetGameInstance(GetWorld()));
+
 		if (gameMode != nullptr && gameInstance != nullptr)
 		{
 			gameMode->RemoveWall();
@@ -134,6 +133,7 @@ bool ADamageableActor::Damage()
 					std::list<EBonus>::iterator it = bonusList.begin();
 					std::advance(it, std::rand() % bonusList.size());
 					EBonus bonus = *it;
+
 					SpawnBonus(bonus);
 					gameMode->AddSpawnedBonus(1);
 				}
