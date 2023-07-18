@@ -36,12 +36,20 @@ public:
 	bool HasDetonatorBonus();
 	void SetDetonatorBonus(bool _detonator);
 
+	bool HasVestBonus();
+	void SetVestBonus(bool _bool);
+
+	bool HasGhostWallsBonus();
+	void SetGhostWallsBonus(bool _bool);
+
 	void ResetAll();
 	void AddToLeaderboard(FString _name);
 	void GetLeaderboard(TArray<int32>& _score, TArray<FString>& _name);
 	void LoadLeaderboard();
 	void SaveLeaderboard();
 	void PlayMusic(EGameState _state);
+	int GetLife();
+	void AddLife(int _amount);
 
 private:
 	int32 m_bombLimit = 1;
@@ -52,6 +60,9 @@ private:
 	float m_speed = 0.9;
 	float m_maxSpeed = 2.4;
 	bool m_detonator = false;
+	bool m_vest = false;
+	bool m_ghostWalls = false;
+	int m_life = 2;
 
 	UPROPERTY(EditAnywhere, meta = (AllowPrivateAccess = "true"))
 	USoundCue* m_menuMusic = nullptr;

@@ -12,6 +12,24 @@ void UPlayerHUD::SetScore(int32 _score)
     }
 }
 
+void UPlayerHUD::SetTime(int32 _time)
+{
+    if (m_timeText != nullptr)
+    {
+        std::string var = "Time : " + std::to_string(_time);
+        m_timeText->SetText(FText::FromString(var.c_str()));
+    }
+}
+
+void UPlayerHUD::SetLife(int32 _life)
+{
+    if (m_lifeText != nullptr)
+    {
+        std::string var = "Life : " + std::to_string(_life);
+        m_lifeText->SetText(FText::FromString(var.c_str()));
+    }
+}
+
 void UPlayerHUD::NativeConstruct()
 {
     Super::NativeConstruct();

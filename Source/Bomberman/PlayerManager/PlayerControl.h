@@ -42,16 +42,23 @@ public:
 	void Damage();
 	virtual void Tick(float DeltaTime) override;
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
+
 	void BonusBombPower();
 	void BonusBombLimit();
 	void BonusSpeed();
 	void BonusDetonator();
+	void BonusVest();
+	void BonusGhostWalls();
+
 	void ActualiseScore();
+	void ActualiseTimer();
+	void ActualiseLife();
 	void PauseGame();
 	void OpenMainMenu();
 	bool IsDead();
 	bool IsPlacingBomb();
 	void SetPlacingBomb(bool _bool);
+	bool hasPlaceToSpawnBomb();
 	UFUNCTION()
 	void OnInteract(UPrimitiveComponent* HitComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
 
@@ -66,6 +73,8 @@ private:
 
 	int32 m_maxPlacedBomb = 1;
 	bool m_dead = false;
+	bool m_isRespawning = false;
+	float m_respawningTimer = 5.0f;
 	bool m_canPlaceBomb = true;
 	bool m_isPlacingBomb = false;
 

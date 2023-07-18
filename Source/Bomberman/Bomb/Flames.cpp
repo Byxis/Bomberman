@@ -41,10 +41,27 @@ void AFlames::OnEntityInteract(UPrimitiveComponent* HitComp, AActor* OtherActor,
 {
 	if (m_timer >= 0.7f)
 	{
+		ACustomGameMode* gameMode = Cast<ACustomGameMode>(UGameplayStatics::GetGameMode(this));
 		APlayerControl* playerControl = Cast<APlayerControl>(OtherActor);
 		if (playerControl != nullptr)
 		{
-			playerControl->Damage();
+			bool canPlayerTakeDamage = true;
+			UCustomGameInstance* gameInstance = Cast<UCustomGameInstance>(UGameplayStatics::GetGameInstance(GetWorld()));
+
+			if (gameMode != nullptr)
+			{
+				canPlayerTakeDamage = !gameMode->IsBonusLevel();
+			}
+
+			if (gameInstance != nullptr && canPlayerTakeDamage)
+			{
+				canPlayerTakeDamage = !gameInstance->HasVestBonus();
+			}
+			
+			if (canPlayerTakeDamage)
+			{
+				playerControl->Damage();
+			}
 		}
 
 		ABonus* bonus = Cast<ABonus>(OtherActor);
@@ -56,13 +73,13 @@ void AFlames::OnEntityInteract(UPrimitiveComponent* HitComp, AActor* OtherActor,
 		AEnemyHandler* enemy = Cast<AEnemyHandler>(OtherActor);
 		if (enemy != nullptr)
 		{
-			ACustomGameMode* gameMode = Cast<ACustomGameMode>(UGameplayStatics::GetGameMode(this));
 			if (gameMode != nullptr)
 			{
 				gameMode->KillEnemy();
 			}
 			enemy->Damage();
 		}
+
 		UBombHandler* bomb = OtherActor->GetComponentByClass<UBombHandler>();
 		if (bomb != nullptr)
 		{

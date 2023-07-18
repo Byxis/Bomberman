@@ -58,6 +58,7 @@ void APlayerControl::BeginPlay()
 		{
 			m_playerHud->AddToViewport();
 		}
+		ActualiseLife();
 		ActualiseScore();
 	}
 }
@@ -75,6 +76,19 @@ void APlayerControl::EndPlay(const EEndPlayReason::Type EndPlayReason)
 void APlayerControl::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
+
+	ActualiseTimer();
+
+	if (m_isRespawning)
+	{
+		if (m_respawningTimer > 0)
+			m_respawningTimer -= DeltaTime;
+		else if (m_gameMode != nullptr)
+			m_gameMode->RestartLevel();
+		else
+			Damage();
+			
+	}
 
 	SpringArmComp->SetWorldLocationAndRotation(FVector(1700.0f, 900.0f, 1500.0f), FRotator(-90.0f, 0.0f, -90.0f));
 }
@@ -135,6 +149,9 @@ void APlayerControl::SpawnBomb()
 			50);
 		const FRotator rotation = GetActorRotation();
 
+		if (!hasPlaceToSpawnBomb())
+			return;
+
 		FString message = FString::Printf(TEXT("Location: X=%f, Y=%f, Z=%f, remaining:%f"), location.X, location.Y, location.Z, m_maxPlacedBomb);
 		AActor* spawnedbomb = GetWorld()->SpawnActor<AActor>(m_bomb, location, rotation);
 		if (spawnedbomb != nullptr)
@@ -179,38 +196,84 @@ void APlayerControl::Damage()
 	if (!m_dead)
 	{
 		m_dead = true;
-		m_gameOverHud = CreateWidget<UGameoverHUD>(GetGameInstance(), m_gameOverHudClass, FName("GameoverWidget"));
-
-		m_playerHud->RemoveFromParent();
-
-		if (m_gameOverHud != nullptr)
+		if (m_gameInstance != nullptr && m_gameInstance->GetLife() > 0)
 		{
-			m_gameOverHud->AddToViewport();
-			GetWorld()->GetFirstPlayerController()->SetShowMouseCursor(true);
+			m_gameInstance->AddLife(-1);
+			ActualiseLife();
+			m_isRespawning = true;
+			m_respawningTimer = 5.0f;
+		}
+		else
+		{
+			m_gameOverHud = CreateWidget<UGameoverHUD>(GetGameInstance(), m_gameOverHudClass, FName("GameoverWidget"));
+
+			m_playerHud->RemoveFromParent();
+
+			if (m_gameOverHud != nullptr)
+			{
+				m_gameOverHud->AddToViewport();
+				GetWorld()->GetFirstPlayerController()->SetShowMouseCursor(true);
+			}
 		}
 	}
+	
 }
 
 
 void APlayerControl::BonusBombPower()
 {
-	m_gameInstance->AddBombPower(1);
+	if (m_gameInstance != nullptr)
+	{
+		m_gameInstance->AddBombPower(1);
+		m_gameInstance->AddScore(1000);
+	}
 }
 
 void APlayerControl::BonusBombLimit()
 {
-	m_gameInstance->AddBombLimit(1);
-	m_maxPlacedBomb++;
+	if (m_gameInstance != nullptr)
+	{
+		m_gameInstance->AddBombLimit(1);
+		m_gameInstance->AddScore(1000);
+		m_maxPlacedBomb++;
+	}
 }
 
 void APlayerControl::BonusSpeed()
 {
-	m_gameInstance->AddSpeed(0.5f);
+	if (m_gameInstance != nullptr)
+	{
+		m_gameInstance->AddSpeed(0.5f);
+		m_gameInstance->AddScore(1000);
+	}
 }
 
 void APlayerControl::BonusDetonator()
 {
-	m_gameInstance->SetDetonatorBonus(true);
+	if (m_gameInstance != nullptr)
+	{
+		m_gameInstance->SetDetonatorBonus(true);
+		m_gameInstance->AddScore(1000);
+	}
+}
+
+void APlayerControl::BonusVest()
+{
+	if (m_gameInstance != nullptr)
+	{
+		m_gameInstance->SetVestBonus(true);
+		m_gameInstance->AddScore(1000);
+	}
+}
+
+void APlayerControl::BonusGhostWalls()
+{
+	if (m_gameInstance != nullptr && m_gameMode != nullptr)
+	{
+		m_gameInstance->SetGhostWallsBonus(true);
+		m_gameMode->SetActiveWallsGhost();
+		m_gameInstance->AddScore(1000);
+	}
 }
 
 void APlayerControl::ActualiseScore()
@@ -224,6 +287,28 @@ void APlayerControl::ActualiseScore()
 		if (m_pauseHud != nullptr)
 		{
 			m_pauseHud->SetScore(m_gameInstance->GetScore());
+		}
+	}
+}
+
+void APlayerControl::ActualiseTimer()
+{
+	if (m_gameMode != nullptr)
+	{
+		if (m_playerHud != nullptr)
+		{
+			m_playerHud->SetTime(m_gameMode->GetTimer());
+		}
+	}
+}
+
+void APlayerControl::ActualiseLife()
+{
+	if (m_gameInstance != nullptr)
+	{
+		if (m_playerHud != nullptr)
+		{
+			m_playerHud->SetLife(m_gameInstance->GetLife());
 		}
 	}
 }
@@ -281,6 +366,43 @@ bool APlayerControl::IsPlacingBomb()
 void APlayerControl::SetPlacingBomb(bool _bool)
 {
 	m_isPlacingBomb = _bool;
+}
+
+bool APlayerControl::hasPlaceToSpawnBomb()
+{
+	FVector startTrace = GetActorLocation() - FVector(0, 20, 0);
+	FVector endTrace = FVector(0, 40, 0) + startTrace;
+	FCollisionQueryParams* CQP = new FCollisionQueryParams();
+	CQP->AddIgnoredActor(this);
+	TArray<FHitResult> hitResults;
+
+	if (GetWorld()->LineTraceMultiByChannel(hitResults, startTrace, endTrace, ECC_Visibility, *CQP))
+	{
+		for (FHitResult& hitResult : hitResults)
+		{
+			AActor* actor = hitResult.GetActor();
+			if (actor != nullptr)
+			{
+				return false;
+			}
+		}
+	}
+
+	startTrace = GetActorLocation() - FVector(20, 0, 0);
+	endTrace = FVector(40, 0, 0) + startTrace;
+
+	if (GetWorld()->LineTraceMultiByChannel(hitResults, startTrace, endTrace, ECC_Visibility, *CQP))
+	{
+		for (FHitResult& hitResult : hitResults)
+		{
+			AActor* actor = hitResult.GetActor();
+			if (actor != nullptr)
+			{
+				return false;
+			}
+		}
+	}
+	return true;
 }
 
 void APlayerControl::OnInteract(UPrimitiveComponent* HitComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)

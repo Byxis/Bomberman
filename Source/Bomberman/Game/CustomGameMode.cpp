@@ -7,6 +7,9 @@
 
 ACustomGameMode::ACustomGameMode()
 {
+	PrimaryActorTick.bStartWithTickEnabled = true;
+	PrimaryActorTick.bCanEverTick = true;
+
 	GameStateClass = ACustomGameState::StaticClass();
 	int32 random = 1+std::rand() % 2;
 	m_maxBonusRound = random;
@@ -25,19 +28,51 @@ void ACustomGameMode::BeginPlay()
 	}
 	else
 	{
+		if (UGameplayStatics::GetCurrentLevelName(GetWorld(), true).Equals("Level_Bonus"))
+		{
+			m_timer = 30.0f;
+		}
 		SetCurrentGameState(EGameState::Playing);
 	}
-
-	UCustomGameSave* m_gameSave = Cast<UCustomGameSave>(UGameplayStatics::CreateSaveGameObject(UCustomGameSave::StaticClass()));
-	UCustomGameInstance* gameInstance = Cast<UCustomGameInstance>(UGameplayStatics::GetGameInstance(UCustomGameInstance::StaticClass()));
-	if (gameInstance != nullptr)
-		gameInstance->PlayMusic(m_currentGameState);
 	Super::BeginPlay();
+
+	m_gameInstance = Cast<UCustomGameInstance>(UGameplayStatics::GetGameInstance(GetWorld()));
+
+	if (m_gameInstance != nullptr)
+	{
+		m_gameInstance->PlayMusic(m_currentGameState);
+	}
+}
+
+void ACustomGameMode::Tick(float DeltaTime)
+{
+	Super::Tick(DeltaTime);
+
+	if (m_timer > 0 && m_currentGameState == EGameState::Playing)
+		m_timer -= DeltaTime;
+	
+	if (!m_hasTimeExpired && m_timer < 0 && m_currentGameState == EGameState::Playing)
+		m_hasTimeExpired = true;
+
+	if (m_hasTimeExpired)
+	{
+		if (IsBonusLevel())
+			NextLevel();
+		else
+		{
+			//TODO: spawn hard enemies
+		}
+	}
 }
 
 void ACustomGameMode::NextLevel()
 {
-	GetGameState<ACustomGameState>()->SetLevel(GetGameState<ACustomGameState>()->GetLevel() + 1);
+	if (!IsBonusLevel())
+	{
+		GetGameState<ACustomGameState>()->SetLevel(GetGameState<ACustomGameState>()->GetLevel() + 1);
+		if (m_gameInstance != nullptr)
+			m_gameInstance->AddLife(1);
+	}
 	FString current = GetWorld()->GetMapName();
 	current.RemoveFromStart(GetWorld()->StreamingLevelsPrefix);
 
@@ -54,19 +89,43 @@ void ACustomGameMode::NextLevel()
 	}
 }
 
+void ACustomGameMode::RestartLevel()
+{
+	UGameplayStatics::OpenLevel(GetWorld(), FName(UGameplayStatics::GetCurrentLevelName(GetWorld(), true)));
+}
+
 int32 ACustomGameMode::GetNbrOfWalls()
 {
-	return m_nbrWalls;
+	return m_walls.Num();
 }
 
-void ACustomGameMode::AddWall()
+void ACustomGameMode::AddWall(AActor* _actor)
 {
-	m_nbrWalls += 1;
+	m_walls.Add(_actor);
+	if (m_gameInstance->HasGhostWallsBonus())
+	{
+		UStaticMeshComponent* mesh = _actor->GetComponentByClass<UStaticMeshComponent>();
+		if (mesh != nullptr)
+			mesh->SetCollisionProfileName(FName("GhostWalls"));
+	}
 }
 
-void ACustomGameMode::RemoveWall()
+void ACustomGameMode::SetActiveWallsGhost()
 {
-	m_nbrWalls -= 1;
+	if (m_gameInstance->HasGhostWallsBonus())
+	{
+		for (AActor* actor : m_walls)
+		{
+			UStaticMeshComponent* mesh = actor->GetComponentByClass<UStaticMeshComponent>();
+			if (mesh != nullptr)
+				mesh->SetCollisionProfileName(FName("GhostWalls"));
+		}
+	}
+}
+
+void ACustomGameMode::RemoveWall(AActor* _actor)
+{
+	m_walls.Remove(_actor);
 }
 
 void ACustomGameMode::SetCurrentGameState(EGameState _newState)
@@ -131,4 +190,14 @@ void ACustomGameMode::KillEnemy()
 int ACustomGameMode::GetRemainingBonuses()
 {
 	return m_maxBonusRound- m_spawnedBonus;
+}
+
+int ACustomGameMode::GetTimer()
+{
+	return (int) m_timer;
+}
+
+bool ACustomGameMode::IsBonusLevel()
+{
+	return UGameplayStatics::GetCurrentLevelName(GetWorld(), true).Equals(TEXT("Level_Bonus"));
 }

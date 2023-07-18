@@ -11,7 +11,9 @@ enum class EBonus : uint8
 	Power,
 	Limit,
 	Speed,
-	Detonator
+	Detonator,
+	Vest,
+	GhostWalls
 };
 
 UCLASS()

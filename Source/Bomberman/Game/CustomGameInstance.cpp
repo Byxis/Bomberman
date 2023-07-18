@@ -94,6 +94,26 @@ void UCustomGameInstance::SetDetonatorBonus(bool _detonator)
     m_detonator = _detonator;
 }
 
+bool UCustomGameInstance::HasVestBonus()
+{
+    return m_vest;
+}
+
+void UCustomGameInstance::SetVestBonus(bool _bool)
+{
+    m_vest = _bool;
+}
+
+bool UCustomGameInstance::HasGhostWallsBonus()
+{
+    return m_ghostWalls;
+}
+
+void UCustomGameInstance::SetGhostWallsBonus(bool _bool)
+{
+    m_ghostWalls = _bool;
+}
+
 void UCustomGameInstance::ResetAll()
 {
     m_bombLimit = 1;
@@ -104,6 +124,8 @@ void UCustomGameInstance::ResetAll()
     m_speed = 0.9;
     m_maxSpeed = 2.4;
     m_detonator = false;
+    m_vest = false;
+    m_ghostWalls = false;
 }
 
 void UCustomGameInstance::AddToLeaderboard(FString _name)
@@ -178,4 +200,14 @@ void UCustomGameInstance::PlayMusic(EGameState _state)
             break;
         }
     }
+}
+
+int UCustomGameInstance::GetLife()
+{
+    return m_life;
+}
+
+void UCustomGameInstance::AddLife(int _amount)
+{
+    m_life += _amount;
 }

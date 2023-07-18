@@ -12,9 +12,15 @@ class BOMBERMAN_API UPlayerHUD : public UUserWidget
 
 public:
 	void SetScore(int32 _score);
+	void SetTime(int32 _time);
+	void SetLife(int32 _life);
 
 	UPROPERTY(EditAnywhere, meta = (BindWidget))
 	class UTextBlock* m_scoreText = nullptr;
+	UPROPERTY(EditAnywhere, meta = (BindWidget))
+	class UTextBlock* m_timeText = nullptr;
+	UPROPERTY(EditAnywhere, meta = (BindWidget))
+	class UTextBlock* m_lifeText = nullptr;
 
 protected:
 	virtual void NativeConstruct() override;
