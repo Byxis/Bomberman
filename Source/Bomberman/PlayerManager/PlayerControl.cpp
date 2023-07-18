@@ -142,28 +142,26 @@ void APlayerControl::MoveRight(float _axis)
 
 void APlayerControl::SpawnBomb()
 {
-	if (m_maxPlacedBomb > 0 && m_canPlaceBomb && !m_dead)
+	if (m_maxPlacedBomb > 0 && m_canPlaceBomb && !m_dead && hasPlaceToSpawnBomb())
 	{
 		const FVector location(FGenericPlatformMath::RoundToInt((GetActorLocation().X - 50) / 100) * 100 + 50,
 			FGenericPlatformMath::RoundToInt((GetActorLocation().Y - 50) / 100) * 100 + 50,
 			50);
 		const FRotator rotation = GetActorRotation();
 
-		if (!hasPlaceToSpawnBomb())
-			return;
-
 		FString message = FString::Printf(TEXT("Location: X=%f, Y=%f, Z=%f, remaining:%f"), location.X, location.Y, location.Z, m_maxPlacedBomb);
 		AActor* spawnedbomb = GetWorld()->SpawnActor<AActor>(m_bomb, location, rotation);
 		if (spawnedbomb != nullptr)
 		{
-			SetPlacingBomb(true);
 			SetCanPlaceBomb(false);
-			GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Red, message);
+			m_maxPlacedBomb--;
 			UBombHandler* bombHandler = spawnedbomb->GetComponentByClass<UBombHandler>();
 			if (bombHandler != nullptr)
 				bombHandler->SetPower(m_gameInstance->GetBombPower());
 
-			m_maxPlacedBomb--;
+			SetPlacingBomb(true);
+			GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Red, message);
+			
 		}
 	}
 }

@@ -113,7 +113,6 @@ void UBombHandler::ApplyDestroyEffect()
 	FVector endTrace = FVector(0, 0, 0);
 
 	GetWorld()->SpawnActor<AActor>(m_flames, startTrace, FRotator(0, 0, 0));
-	startTrace += FVector(0, 55.0f, 0);
 	for (int i = 1; i <= m_power; i++)
 	{
 		endTrace = FVector(0, 100.0f, 0) + startTrace;
@@ -128,7 +127,6 @@ void UBombHandler::ApplyDestroyEffect()
 
 	startTrace = GetOwner()->GetActorLocation();
 	endTrace = FVector(0, 0, 0);
-	startTrace += FVector(0, -55.0f, 0);
 
 	for (int i = 1; i <= m_power; i++)
 	{
@@ -144,7 +142,6 @@ void UBombHandler::ApplyDestroyEffect()
 
 	startTrace = GetOwner()->GetActorLocation();
 	endTrace = FVector(0, 0, 0);
-	startTrace += FVector(-55.0f, 0, 0);
 
 	for (int i = 1; i <= m_power; i++)
 	{
@@ -160,7 +157,6 @@ void UBombHandler::ApplyDestroyEffect()
 
 	startTrace = GetOwner()->GetActorLocation();
 	endTrace = FVector(0, 0, 0);
-	startTrace += FVector(55.0f, 0, 0);
 
 	for (int i = 1; i <= m_power; i++)
 	{
