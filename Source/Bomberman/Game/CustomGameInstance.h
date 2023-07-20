@@ -45,9 +45,8 @@ public:
 	void ResetAll();
 	void AddToLeaderboard(FString _name);
 	void GetLeaderboard(TArray<int32>& _score, TArray<FString>& _name);
-	void LoadLeaderboard();
-	void SaveLeaderboard();
-	void PlayMusic(EGameState _state);
+	UCustomGameSave* GetActualLeaderboard();
+	void SaveLeaderboard(UCustomGameSave* _gameSave);
 	int GetLife();
 	void AddLife(int _amount);
 
@@ -63,13 +62,4 @@ private:
 	bool m_vest = false;
 	bool m_ghostWalls = false;
 	int m_life = 2;
-
-	UPROPERTY(EditAnywhere, meta = (AllowPrivateAccess = "true"))
-	USoundCue* m_menuMusic = nullptr;
-	UPROPERTY(EditAnywhere, meta = (AllowPrivateAccess = "true"))
-	USoundCue* m_levelMusic = nullptr;
-	UPROPERTY(EditAnywhere, meta = (AllowPrivateAccess = "true"))
-	USoundCue* m_secretLevelMusic = nullptr;
-
-	UCustomGameSave* m_gameSave = nullptr;
 };

@@ -23,7 +23,8 @@ public:
 	TArray<FString> GetNames();
 
 private:
+	UPROPERTY()
 	TArray<int32> m_scoreArray;
-	TArray<FString> m_nameArray;
-	
+	UPROPERTY()
+	TArray<FString> m_nameArray;	
 };

@@ -23,7 +23,7 @@ UBombHandler::UBombHandler(const FObjectInitializer& _objectInitializer)
 	{
 		m_collisionExit->SetupAttachment(m_owner->GetRootComponent());
 		m_collisionExit->SetRelativeScale3D(FVector(0.3f, 0.3f, 0.3f));
-		m_collisionExit->SetCollisionProfileName(FName("OverlapAll"), true);
+		m_collisionExit->SetCollisionProfileName(FName("GhostBomb"), true);
 		m_collisionExit->OnComponentEndOverlap.AddDynamic(this, &UBombHandler::OnPlayerLeaveBomb);
 	}
 	m_collision = CreateDefaultSubobject<UBoxComponent>(TEXT("collision"));
@@ -56,7 +56,7 @@ void UBombHandler::BeginPlay()
 	if (m_skeleton != nullptr)
 	{
 		m_material = m_skeleton->CreateDynamicMaterialInstance(0, m_skeleton->GetMaterial(0));
-		m_collision->SetCollisionProfileName(FName("Trigger"), true);
+		m_collision->SetCollisionProfileName(FName("GhostBomb"), true);
 	}
 
 	if (m_player != nullptr && m_owner != nullptr)
@@ -68,6 +68,11 @@ void UBombHandler::BeginPlay()
 	if (gameMode != nullptr)
 	{
 		gameMode->AddBomb(this);
+	}
+
+	if (m_smokeSFX != nullptr)
+	{
+		UGameplayStatics::PlaySound2D(GetWorld(), m_smokeSFX, 1, 1, 0);
 	}
 }
 
@@ -92,15 +97,23 @@ void UBombHandler::TickComponent(float DeltaTime, ELevelTick TickType, FActorCom
 
 void UBombHandler::Explode()
 {
+	if (m_explosionSFX != nullptr)
+	{
+		UGameplayStatics::PlaySound2D(GetWorld(), m_explosionSFX, 1, 1, 0);
+	}
+
 	ACustomGameMode* gameMode = Cast<ACustomGameMode>(UGameplayStatics::GetGameMode(this));
+	m_exploding = true;
+
 	if (gameMode != nullptr)
 	{
 		gameMode->RemoveBomb(this);
 	}
-	m_exploding = true;
+
 	ApplyDestroyEffect();
 	m_player->GiveBackBomb();
-	if (m_collision->GetCollisionProfileName().IsEqual(FName("Trigger")))
+
+	if (m_collision->GetCollisionProfileName().IsEqual(FName("GhostBomb")))
 	{
 		m_player->SetCanPlaceBomb(true);
 	}
@@ -212,7 +225,8 @@ void UBombHandler::CheckIfWall(FVector _startTrace, FVector _endTrace)
 			AActor* actor = hitResult.GetActor();
 			if (actor != nullptr)
 			{
-				ADamageableActor* damageableActor = Cast<ADamageableActor>(actor);
+				ADamageableActor* damageableActor = Cast<ADamageableActor>(actor); 
+				UBombHandler* bomb = actor->GetComponentByClass<UBombHandler>();
 
 				if (damageableActor != nullptr && damageableActor->Damage())
 				{
@@ -232,7 +246,7 @@ void UBombHandler::OnPlayerLeaveBomb(UPrimitiveComponent* OverlappedComp, AActor
 		if (playerControl != nullptr)
 		{
 			playerControl->SetCanPlaceBomb(true);
-			m_collision->SetCollisionProfileName(FName("InvisibleWallDynamic"), true);
+			m_collision->SetCollisionProfileName(FName("Bomb"), true);
 		}
 	}
 }

@@ -15,6 +15,7 @@ AFlames::AFlames(const FObjectInitializer& _objectInitializer)
 		m_collision->SetRelativeScale3D(FVector(1.3f, 1.3f, 1.3f));
 		m_collision->SetHiddenInGame(true);
 		m_collision->SetHiddenInSceneCapture(true);
+		m_collision->SetCollisionProfileName(FName("OverlapAll"));
 		m_collision->OnComponentBeginOverlap.AddDynamic(this, &AFlames::OnEntityInteract);
 
 		RootComponent = m_collision;
@@ -73,19 +74,25 @@ void AFlames::OnEntityInteract(UPrimitiveComponent* HitComp, AActor* OtherActor,
 		AEnemyHandler* enemy = Cast<AEnemyHandler>(OtherActor);
 		if (enemy != nullptr)
 		{
-			if (gameMode != nullptr)
-			{
-				gameMode->KillEnemy();
-			}
 			enemy->Damage();
 		}
 
 		UBombHandler* bomb = OtherActor->GetComponentByClass<UBombHandler>();
-		if (bomb != nullptr)
+		if (bomb != nullptr && m_timer == 2.5f)
 		{
 			if (!bomb->IsExploding() && GetDistanceTo(OtherActor) <= 50)
 				bomb->Explode();
 		}
 	}
 	
+}
+
+void AFlames::BeginPlay()
+{
+	Super::BeginPlay();
+
+	if (m_flamesSFX != nullptr)
+	{
+		UGameplayStatics::PlaySound2D(GetWorld(), m_flamesSFX, 1, 1, 0);
+	}
 }

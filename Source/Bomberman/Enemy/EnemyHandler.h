@@ -29,11 +29,18 @@ private:
 		West,
 		None
 	};
-
+	UPROPERTY(EditAnywhere, meta = (AllowPrivateAccess = "true"))
+	float m_speedMultiplier = 1.0f;
 	float m_speed = 200.0f;
 	UBoxComponent* m_collision = nullptr;
 	EDirection m_currentDirection = EDirection::South;
-	float m_timer = 2.0f;
+	float m_defaultTimer = 2;
+	float m_timer = m_defaultTimer;
+	UPROPERTY(EditAnywhere, meta = (AllowPrivateAccess = "true"))
+	int m_score = 100;
+	UPROPERTY(EditAnywhere, meta = (AllowPrivateAccess = "true"))
+	bool m_iscloudEnemy = false;
+	AActor* m_playerPawn = nullptr;
 
 	void ChangeDirection();
 	bool IsDirectionAvailable(FVector _direction);

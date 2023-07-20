@@ -61,6 +61,7 @@ public:
 	bool hasPlaceToSpawnBomb();
 	UFUNCTION()
 	void OnInteract(UPrimitiveComponent* HitComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
+	void PlayMusic();
 
 	virtual void EndPlay(const EEndPlayReason::Type EndPlayReason) override;
 
@@ -100,4 +101,11 @@ private:
 
 	UCustomGameInstance* m_gameInstance = nullptr;
 	ACustomGameMode* m_gameMode = nullptr;
+
+	UPROPERTY(EditAnywhere, meta = (AllowPrivateAccess = "true"))
+	USoundCue* m_menuMusic = nullptr;
+	UPROPERTY(EditAnywhere, meta = (AllowPrivateAccess = "true"))
+	USoundCue* m_levelMusic = nullptr;
+	UPROPERTY(EditAnywhere, meta = (AllowPrivateAccess = "true"))
+	USoundCue* m_bonusLevelMusic = nullptr;
 };

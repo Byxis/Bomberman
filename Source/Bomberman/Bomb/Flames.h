@@ -3,6 +3,7 @@
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
 #include <Components/BoxComponent.h>
+#include "Sound/SoundCue.h"
 #include "Flames.generated.h"
 
 UCLASS()
@@ -16,8 +17,13 @@ public:
 	UFUNCTION()
 	void OnEntityInteract(class UPrimitiveComponent* HitComp, class AActor* OtherActor, class UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
 
+protected:
+	virtual void BeginPlay() override;
+
 private:
 	float m_timer = 2.5f;
 	bool m_particuleActivated = true;
 	UBoxComponent* m_collision = nullptr;
+	UPROPERTY(EditAnywhere, meta = (AllowPrivateAccess = "true"))
+	USoundCue* m_flamesSFX = nullptr;
 };

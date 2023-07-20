@@ -61,6 +61,7 @@ void APlayerControl::BeginPlay()
 		ActualiseLife();
 		ActualiseScore();
 	}
+	PlayMusic();
 }
 
 void APlayerControl::EndPlay(const EEndPlayReason::Type EndPlayReason)
@@ -408,4 +409,44 @@ void APlayerControl::OnInteract(UPrimitiveComponent* HitComp, AActor* OtherActor
 	AEnemyHandler* enemy = Cast< AEnemyHandler>(OtherActor);
 	if (enemy != nullptr)
 		Damage();
+}
+
+void APlayerControl::PlayMusic()
+{
+	if (m_gameMode == nullptr)
+		return;
+
+	switch (m_gameMode->GetCurrentGameState())
+	{
+		default:
+		{
+			break;
+		}
+		case EGameState::Menu:
+		{
+			if (m_menuMusic != nullptr)
+			{
+				UGameplayStatics::PlaySound2D(GetWorld(), m_menuMusic, 1, 1, 0);
+			}
+			break;
+		}
+		case EGameState::Playing:
+		{
+			if (m_gameMode->IsBonusLevel())
+			{
+				if (m_bonusLevelMusic != nullptr)
+				{
+					UGameplayStatics::PlaySound2D(GetWorld(), m_bonusLevelMusic, 1, 1, 0);
+				}
+			}
+			else
+			{
+				if (m_levelMusic != nullptr)
+				{
+					UGameplayStatics::PlaySound2D(GetWorld(), m_levelMusic, 1, 1, 0);
+				}
+			}
+			break;
+		}
+	}
 }

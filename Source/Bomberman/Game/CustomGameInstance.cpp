@@ -11,7 +11,6 @@ void UCustomGameInstance::Init()
     m_bombLimit = 1;
     m_bombPower = 1;
     m_score = 0;
-    LoadLeaderboard();
 }
 
 int32 UCustomGameInstance::GetBombLimit()
@@ -121,6 +120,7 @@ void UCustomGameInstance::ResetAll()
     m_bombPower = 1;
     m_maxBombPower = 8;
     m_score = 0;
+    m_life = 2;
     m_speed = 0.9;
     m_maxSpeed = 2.4;
     m_detonator = false;
@@ -130,76 +130,67 @@ void UCustomGameInstance::ResetAll()
 
 void UCustomGameInstance::AddToLeaderboard(FString _name)
 {
-    int rank = m_gameSave->LenLeaderboard();
-    for (int i = 0; i < m_gameSave->LenLeaderboard(); i++)
+    UCustomGameSave* gameSave = GetActualLeaderboard();
+
+    int rank = gameSave->LenLeaderboard();
+    for (int i = 0; i < gameSave->LenLeaderboard(); i++)
     {
-        if (m_score > m_gameSave->GetScoreLeaderboard(i))
+        if (m_score > gameSave->GetScoreLeaderboard(i))
         {
             rank = i;
             break;
         }
     }
 
-    if (rank == m_gameSave->LenLeaderboard())
+    if (rank == gameSave->LenLeaderboard())
     {
-        m_gameSave->AddLeaderboard(m_score, _name);
+        gameSave->AddLeaderboard(m_score, _name);
     }
-    else if ((rank < m_gameSave->LenLeaderboard()))
+    else if ((rank < gameSave->LenLeaderboard()))
     {
-        m_gameSave->InsertLeaderboard(m_score, _name, rank);
+        gameSave->InsertLeaderboard(m_score, _name, rank);
     }
-    if (m_gameSave->LenLeaderboard() > 50)
+    if (gameSave->LenLeaderboard() > 50)
     {
-        m_gameSave->RemoveLeaderboard(rank);
+        gameSave->RemoveLeaderboard(rank);
     }
-    SaveLeaderboard();
+    SaveLeaderboard(gameSave);
 }
 
 void UCustomGameInstance::GetLeaderboard(TArray<int32>& _score, TArray<FString>& _name)
 {
-    if (m_gameSave != nullptr)
+    UCustomGameSave* gameSave = GetActualLeaderboard();
+    if (gameSave != nullptr)
     {
-        _score = m_gameSave->GetScores();
-        _name = m_gameSave->GetNames();
+        _score = gameSave->GetScores();
+        _name = gameSave->GetNames();
     }
 }
 
-void UCustomGameInstance::LoadLeaderboard()
+UCustomGameSave* UCustomGameInstance::GetActualLeaderboard()
 {
-    if (m_gameSave != nullptr &&  UGameplayStatics::DoesSaveGameExist("BombermanSave", 0))
+    UCustomGameSave* gameSave = nullptr;
+
+    if (UGameplayStatics::DoesSaveGameExist("BombermanSave", 0))
     {
-        m_gameSave = Cast<UCustomGameSave>(UGameplayStatics::LoadGameFromSlot("BombermanSave", 0));
+        gameSave = Cast<UCustomGameSave>(UGameplayStatics::LoadGameFromSlot("BombermanSave", 0));
     }
     else
     {
-        m_gameSave = Cast<UCustomGameSave>(UGameplayStatics::CreateSaveGameObject(UCustomGameSave::StaticClass()));
-        m_gameSave->DefaultLeaderboard();
-        if (m_gameSave != nullptr)
+        gameSave = Cast<UCustomGameSave>(UGameplayStatics::CreateSaveGameObject(UCustomGameSave::StaticClass()));
+        gameSave->DefaultLeaderboard();
+        if (gameSave != nullptr)
         {
-            SaveLeaderboard();
+            SaveLeaderboard(gameSave);
         }
     }
+    return gameSave;
 }
 
-void UCustomGameInstance::SaveLeaderboard()
+void UCustomGameInstance::SaveLeaderboard(UCustomGameSave* _gameSave)
 {
-    UGameplayStatics::SaveGameToSlot(m_gameSave, TEXT("BombermanSave"), 0);
-}
-
-void UCustomGameInstance::PlayMusic(EGameState _state)
-{
-    switch (_state)
-    {
-    case EGameState::Menu:
-        {
-            UGameplayStatics::PlaySound2D(GetWorld(), m_menuMusic, 1, 1, 0);
-            break;
-        }
-        default:
-        {
-            break;
-        }
-    }
+    UE_LOG(LogTemp, Warning, TEXT("Saved"))
+    UGameplayStatics::SaveGameToSlot(_gameSave, TEXT("BombermanSave"), 0);
 }
 
 int UCustomGameInstance::GetLife()

@@ -22,13 +22,13 @@ ACustomGameMode::ACustomGameMode()
 
 void ACustomGameMode::BeginPlay()
 {
-	if (UGameplayStatics::GetCurrentLevelName(GetWorld(), true).Equals("Level_0"))
+	if (UGameplayStatics::GetCurrentLevelName(GetWorld(), true).Equals(TEXT("Level_0")))
 	{
 		SetCurrentGameState(EGameState::Menu);
 	}
 	else
 	{
-		if (UGameplayStatics::GetCurrentLevelName(GetWorld(), true).Equals("Level_Bonus"))
+		if (IsBonusLevel())
 		{
 			m_timer = 30.0f;
 		}
@@ -37,11 +37,6 @@ void ACustomGameMode::BeginPlay()
 	Super::BeginPlay();
 
 	m_gameInstance = Cast<UCustomGameInstance>(UGameplayStatics::GetGameInstance(GetWorld()));
-
-	if (m_gameInstance != nullptr)
-	{
-		m_gameInstance->PlayMusic(m_currentGameState);
-	}
 }
 
 void ACustomGameMode::Tick(float DeltaTime)
@@ -52,16 +47,42 @@ void ACustomGameMode::Tick(float DeltaTime)
 		m_timer -= DeltaTime;
 	
 	if (!m_hasTimeExpired && m_timer < 0 && m_currentGameState == EGameState::Playing)
-		m_hasTimeExpired = true;
-
-	if (m_hasTimeExpired)
 	{
+		for (AActor* enemy : m_enemies)
+		{
+			enemy->Destroy();
+		}
+		m_enemies.Empty();
+
+		const FRotator rotation(0, 0, 0);
+		if (m_timerEnemy != nullptr)
+		{
+			for (int i = 0; i < 2; i++)
+			{
+				for (int j = 0; j < 4; j++)
+				{
+					FVector location(150 + 700 * j, 150 + 1400 * i, 40);
+					GetWorld()->SpawnActor<AActor>(m_timerEnemy, location, rotation);
+				}
+			}
+		}
+		FVector location(150, 150 + 700, 40);
+		GetWorld()->SpawnActor<AActor>(m_timerEnemy, location, rotation);
+		location = FVector(150, 150 + 2800, 40);
+		GetWorld()->SpawnActor<AActor>(m_timerEnemy, location, rotation);
+
+		m_hasTimeExpired = true;
 		if (IsBonusLevel())
 			NextLevel();
 		else
 		{
-			//TODO: spawn hard enemies
+			SetActiveWallsGhost();
 		}
+	}
+
+	if (m_hasTimeExpired)
+	{
+		
 	}
 }
 
@@ -102,23 +123,56 @@ int32 ACustomGameMode::GetNbrOfWalls()
 void ACustomGameMode::AddWall(AActor* _actor)
 {
 	m_walls.Add(_actor);
-	if (m_gameInstance->HasGhostWallsBonus())
+	UStaticMeshComponent* mesh = _actor->GetComponentByClass<UStaticMeshComponent>();
+	if (mesh != nullptr)
 	{
-		UStaticMeshComponent* mesh = _actor->GetComponentByClass<UStaticMeshComponent>();
-		if (mesh != nullptr)
-			mesh->SetCollisionProfileName(FName("GhostWalls"));
+		if (m_hasTimeExpired)
+		{
+			if (m_gameInstance->HasGhostWallsBonus())
+			{
+				mesh->SetCollisionProfileName(FName("GhostWallsAll"));
+			}
+			else
+			{
+				mesh->SetCollisionProfileName(FName("GhostWallsEnemy"));
+			}
+		}
+		else
+		{
+			if (m_gameInstance->HasGhostWallsBonus())
+			{
+				mesh->SetCollisionProfileName(FName("GhostWallsPlayer"));
+			}
+		}
 	}
+	
 }
 
 void ACustomGameMode::SetActiveWallsGhost()
 {
-	if (m_gameInstance->HasGhostWallsBonus())
+	for (AActor* actor : m_walls)
 	{
-		for (AActor* actor : m_walls)
+		UStaticMeshComponent* mesh = actor->GetComponentByClass<UStaticMeshComponent>();
+		if (mesh != nullptr)
 		{
-			UStaticMeshComponent* mesh = actor->GetComponentByClass<UStaticMeshComponent>();
-			if (mesh != nullptr)
-				mesh->SetCollisionProfileName(FName("GhostWalls"));
+			if (m_hasTimeExpired)
+			{
+				if (m_gameInstance->HasGhostWallsBonus())
+				{
+					mesh->SetCollisionProfileName(FName("GhostWallsAll"));
+				}
+				else
+				{
+					mesh->SetCollisionProfileName(FName("GhostWallsEnemy"));
+				}
+			}
+			else
+			{
+				if (m_gameInstance->HasGhostWallsBonus())
+				{
+					mesh->SetCollisionProfileName(FName("GhostWallsPlayer"));
+				}
+			}
 		}
 	}
 }
@@ -174,17 +228,17 @@ void ACustomGameMode::AddSpawnedBonus(int _i)
 
 bool ACustomGameMode::IsLevelFinished()
 {
-	return m_killedEnemies >= m_maxKilledEnemies;
+	return m_enemies.Num() == 0;
 }
 
-void ACustomGameMode::AddEnemy()
+void ACustomGameMode::AddEnemy(AActor* enemy)
 {
-	m_maxKilledEnemies += 1;
+	m_enemies.Add(enemy);
 }
 
-void ACustomGameMode::KillEnemy()
+void ACustomGameMode::RemoveEnemy(AActor* enemy)
 {
-	m_killedEnemies += 1;
+	m_enemies.Remove(enemy);
 }
 
 int ACustomGameMode::GetRemainingBonuses()

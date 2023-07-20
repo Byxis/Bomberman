@@ -48,12 +48,11 @@ public:
 	bool CanSpawnBonus();
 	void AddSpawnedBonus(int _i);
 	bool IsLevelFinished();
-	void AddEnemy();
-	void KillEnemy();
+	void AddEnemy(AActor* enemy);
+	void RemoveEnemy(AActor* enemy);
 	int GetRemainingBonuses();
 	int GetTimer();
 	bool IsBonusLevel();
-	
 
 protected:
 	virtual void BeginPlay() override;
@@ -65,10 +64,12 @@ private:
 	TArray<AActor*> m_walls;
 	int m_maxBonusRound = 0;
 	int m_spawnedBonus = 0;
-	int m_maxKilledEnemies = 0;
-	int m_killedEnemies = 0;
+	TArray<AActor*> m_enemies;
 	bool m_hasExitSpawned = false;
 	float m_timer = 200.0f;
 	bool m_hasTimeExpired = false;
-	UCustomGameInstance* m_gameInstance = nullptr;
+	UCustomGameInstance* m_gameInstance = nullptr; 
+	
+	UPROPERTY(EditAnywhere, meta = (AllowPrivateAccess = "true"))
+	TSubclassOf<AActor> m_timerEnemy = nullptr;
 };
