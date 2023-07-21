@@ -16,6 +16,8 @@ public:
 	UFUNCTION()
 	void UnPauseGame();
 	UFUNCTION()
+	void OpenOptions();
+	UFUNCTION()
 	void Quit();
 
 	UPROPERTY(EditAnywhere, meta = (BindWidget))
@@ -23,7 +25,7 @@ public:
 	UPROPERTY(EditAnywhere, meta = (BindWidget))
 	class UButton* m_buttonPlay = nullptr;
 	UPROPERTY(EditAnywhere, meta = (BindWidget))
-	class UButton* m_buttonSettings = nullptr;
+	class UButton* m_buttonOptions = nullptr;
 	UPROPERTY(EditAnywhere, meta = (BindWidget))
 	class UButton* m_buttonQuit = nullptr;
 

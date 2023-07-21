@@ -37,10 +37,11 @@ void AEnemyHandler::BeginPlay()
 	ChangeDirection();
 	m_speed *= m_speedMultiplier;
 	m_timer /= m_speedMultiplier;
-	ACustomGameMode* gameMode = Cast<ACustomGameMode>(UGameplayStatics::GetGameMode(this));
-	if (gameMode != nullptr)
+
+	m_gameMode = Cast<ACustomGameMode>(UGameplayStatics::GetGameMode(this));
+	if (m_gameMode != nullptr)
 	{
-		gameMode->AddEnemy(this);
+		m_gameMode->AddEnemy(this);
 	}
 
 	m_playerPawn = UGameplayStatics::GetPlayerPawn(GetWorld(), 0);
@@ -49,6 +50,12 @@ void AEnemyHandler::BeginPlay()
 void AEnemyHandler::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
+
+	if (m_gameMode->GetCurrentGameState() != EGameState::Playing)
+	{
+		return;
+	}
+
 	FVector position = GetActorLocation();
 
 	if (m_timer > 0)

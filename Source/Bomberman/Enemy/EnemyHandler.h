@@ -3,6 +3,7 @@
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
 #include <Components/BoxComponent.h>
+#include <Bomberman/Game/CustomGameMode.h>
 #include "EnemyHandler.generated.h"
 
 UCLASS()
@@ -41,6 +42,7 @@ private:
 	UPROPERTY(EditAnywhere, meta = (AllowPrivateAccess = "true"))
 	bool m_iscloudEnemy = false;
 	AActor* m_playerPawn = nullptr;
+	ACustomGameMode* m_gameMode = nullptr;
 
 	void ChangeDirection();
 	bool IsDirectionAvailable(FVector _direction);

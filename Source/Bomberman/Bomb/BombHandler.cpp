@@ -72,7 +72,7 @@ void UBombHandler::BeginPlay()
 
 	if (m_smokeSFX != nullptr)
 	{
-		UGameplayStatics::PlaySound2D(GetWorld(), m_smokeSFX, 1, 1, 0);
+		m_smokeAudio = UGameplayStatics::SpawnSound2D(GetWorld(), m_smokeSFX, 1, 1, 0);
 	}
 }
 
@@ -99,7 +99,7 @@ void UBombHandler::Explode()
 {
 	if (m_explosionSFX != nullptr)
 	{
-		UGameplayStatics::PlaySound2D(GetWorld(), m_explosionSFX, 1, 1, 0);
+		m_explosionAudio = UGameplayStatics::SpawnSound2D(GetWorld(), m_explosionSFX, 1, 1, 0);
 	}
 
 	ACustomGameMode* gameMode = Cast<ACustomGameMode>(UGameplayStatics::GetGameMode(this));
@@ -254,4 +254,16 @@ void UBombHandler::OnPlayerLeaveBomb(UPrimitiveComponent* OverlappedComp, AActor
 bool UBombHandler::IsExploding()
 {
 	return m_exploding;
+}
+
+void UBombHandler::PauseSFX(bool _bool)
+{
+	if (m_explosionAudio != nullptr)
+	{
+		m_explosionAudio->SetPaused(_bool);
+	}
+	if (m_smokeAudio != nullptr)
+	{
+		m_smokeAudio->SetPaused(_bool);
+	}
 }

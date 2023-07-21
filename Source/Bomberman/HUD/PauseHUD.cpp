@@ -31,14 +31,13 @@ void UPauseHUD::NativeConstruct()
         }
     }
     if (m_buttonPlay != nullptr)
-    {
         m_buttonPlay->OnClicked.AddDynamic(this, &UPauseHUD::UnPauseGame);
-    }
+
+    if (m_buttonOptions != nullptr)
+        m_buttonOptions->OnClicked.AddDynamic(this, &UPauseHUD::OpenOptions);
 
     if (m_buttonQuit != nullptr)
-    {
         m_buttonQuit->OnClicked.AddDynamic(this, &UPauseHUD::Quit);
-    }
 }
 
 void UPauseHUD::UnPauseGame()
@@ -47,6 +46,15 @@ void UPauseHUD::UnPauseGame()
     if (playerControl != nullptr)
     {
         playerControl->PauseGame();
+    }
+}
+
+void UPauseHUD::OpenOptions()
+{
+    APlayerControl* playerControl = Cast<APlayerControl>(UGameplayStatics::GetPlayerPawn(GetWorld(), 0));
+    if (playerControl != nullptr)
+    {
+        playerControl->OpenOptionsMenu();
     }
 }
 

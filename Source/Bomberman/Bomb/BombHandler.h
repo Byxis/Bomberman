@@ -3,7 +3,8 @@
 #include "CoreMinimal.h"
 #include "Components/ActorComponent.h"
 #include "./Bomberman/PlayerManager/PlayerControl.h"
-#include <Components/BoxComponent.h>
+#include <Components/BoxComponent.h>	
+#include "Components/AudioComponent.h"
 #include "BombHandler.generated.h"
 
 UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
@@ -21,6 +22,7 @@ public:
 	UFUNCTION()
 	void OnPlayerLeaveBomb(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex);
 	bool IsExploding();
+	void PauseSFX(bool _bool);
 
 protected:
 	virtual void BeginPlay() override;
@@ -48,4 +50,7 @@ private:
 	USoundCue* m_smokeSFX = nullptr;
 	UPROPERTY(EditAnywhere, meta = (AllowPrivateAccess = "true"))
 	USoundCue* m_explosionSFX = nullptr;
+
+	UAudioComponent* m_smokeAudio = nullptr;
+	UAudioComponent* m_explosionAudio = nullptr;
 };

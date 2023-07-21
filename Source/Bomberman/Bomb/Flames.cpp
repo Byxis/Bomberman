@@ -34,6 +34,11 @@ void AFlames::Tick(float DeltaTime)
 	}
 	if (m_timer <= 0)
 	{
+		ACustomGameMode* gameMode = Cast<ACustomGameMode>(UGameplayStatics::GetGameMode(this));
+		if (gameMode != nullptr)
+		{
+			gameMode->RemoveFlame(this);
+		}
 		Destroy();
 	}
 }
@@ -87,12 +92,26 @@ void AFlames::OnEntityInteract(UPrimitiveComponent* HitComp, AActor* OtherActor,
 	
 }
 
+void AFlames::PauseSFX(bool _bool)
+{
+	if (m_flamesAudio != nullptr)
+	{
+		m_flamesAudio->SetPaused(_bool);
+	}
+}
+
 void AFlames::BeginPlay()
 {
 	Super::BeginPlay();
 
 	if (m_flamesSFX != nullptr)
 	{
-		UGameplayStatics::PlaySound2D(GetWorld(), m_flamesSFX, 1, 1, 0);
+		m_flamesAudio = UGameplayStatics::CreateSound2D(GetWorld(), m_flamesSFX, 1, 1, 0);
+	}
+
+	ACustomGameMode* gameMode = Cast<ACustomGameMode>(UGameplayStatics::GetGameMode(this));
+	if (gameMode != nullptr)
+	{
+		gameMode->AddFlame(this);
 	}
 }

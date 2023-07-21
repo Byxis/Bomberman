@@ -4,6 +4,14 @@
 UCustomGameSave::UCustomGameSave()
 {}
 
+void UCustomGameSave::Default()
+{
+    DefaultLeaderboard();
+    m_musicVolume = 1;
+    m_jingleVolume = 1;
+    m_sfxVolume = 1;
+}
+
 void UCustomGameSave::DefaultLeaderboard()
 {
     m_scoreArray.Add(500);
@@ -48,4 +56,24 @@ TArray<int32> UCustomGameSave::GetScores()
 TArray<FString> UCustomGameSave::GetNames()
 {
     return m_nameArray;
+}
+
+float UCustomGameSave::GetMusicVolume()
+{
+    return m_musicVolume;
+}
+
+void UCustomGameSave::SetMusicVolume(float _volume)
+{
+    m_musicVolume = _volume;
+}
+
+float UCustomGameSave::GetSFXVolume()
+{
+    return m_sfxVolume;
+}
+
+void UCustomGameSave::SetSFXVolume(float _volume)
+{
+    m_sfxVolume = _volume;
 }

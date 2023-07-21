@@ -15,7 +15,7 @@ public:
 	UPROPERTY(EditAnywhere, meta = (BindWidget))
 	class UButton* m_buttonPlay = nullptr;
 	UPROPERTY(EditAnywhere, meta = (BindWidget))
-	class UButton* m_buttonSettings = nullptr;
+	class UButton* m_buttonOption = nullptr;
 	UPROPERTY(EditAnywhere, meta = (BindWidget))
 	class UButton* m_buttonQuit = nullptr;
 
@@ -40,6 +40,8 @@ public:
 
 	UFUNCTION()
 	void StartPlaying();
+	UFUNCTION()
+	void OpenOptionMenu();
 	UFUNCTION()
 	void Quit();
 

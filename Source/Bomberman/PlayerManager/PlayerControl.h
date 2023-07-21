@@ -15,8 +15,11 @@
 #include "./Bomberman/HUD/PauseHUD.h"
 #include "./Bomberman/HUD/GameoverHUD.h"
 #include "./Bomberman/HUD/MainmenuHUD.h"
+#include "./Bomberman/HUD/StartingHUD.h"
 #include <Bomberman/Game/CustomGameInstance.h>
-#include <Bomberman/Game/CustomGameMode.h>
+#include <Bomberman/Game/CustomGameMode.h>	
+#include "Components/AudioComponent.h"
+#include <Bomberman/HUD/OptionHUD.h>
 #include "PlayerControl.generated.h"
 
 UCLASS()
@@ -55,6 +58,8 @@ public:
 	void ActualiseLife();
 	void PauseGame();
 	void OpenMainMenu();
+	void OpenOptionsMenu();
+	void CloseOptionsMenu();
 	bool IsDead();
 	bool IsPlacingBomb();
 	void SetPlacingBomb(bool _bool);
@@ -62,6 +67,10 @@ public:
 	UFUNCTION()
 	void OnInteract(UPrimitiveComponent* HitComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
 	void PlayMusic();
+	void PauseMusic(bool _bool);
+	void SetMusicVolume(float _volume);
+	void PlayJingle();
+	void PauseJingle(bool _bool);
 
 	virtual void EndPlay(const EEndPlayReason::Type EndPlayReason) override;
 
@@ -78,6 +87,8 @@ private:
 	float m_respawningTimer = 5.0f;
 	bool m_canPlaceBomb = true;
 	bool m_isPlacingBomb = false;
+	float m_startDelay = 3.0f;
+	bool m_hasEnded = false;
 
 	UPROPERTY(Editanywhere)
 	TSubclassOf<UPlayerHUD> m_playerHudClass = nullptr;
@@ -99,13 +110,35 @@ private:
 	UPROPERTY()
 	class UMainmenuHUD* m_mainMenuHud = nullptr;
 
+	UPROPERTY(Editanywhere)
+	TSubclassOf<UStartingHUD> m_startingHudClass = nullptr;
+	UPROPERTY()
+	class UStartingHUD* m_startingHud = nullptr;
+
+	UPROPERTY(Editanywhere)
+	TSubclassOf<UOptionHUD> m_optionHudClass = nullptr;
+	UPROPERTY()
+	class UOptionHUD* m_optionHud = nullptr;
+
 	UCustomGameInstance* m_gameInstance = nullptr;
 	ACustomGameMode* m_gameMode = nullptr;
 
+	//Musics
 	UPROPERTY(EditAnywhere, meta = (AllowPrivateAccess = "true"))
 	USoundCue* m_menuMusic = nullptr;
 	UPROPERTY(EditAnywhere, meta = (AllowPrivateAccess = "true"))
 	USoundCue* m_levelMusic = nullptr;
 	UPROPERTY(EditAnywhere, meta = (AllowPrivateAccess = "true"))
 	USoundCue* m_bonusLevelMusic = nullptr;
+
+	//Jingle
+	UPROPERTY(EditAnywhere, meta = (AllowPrivateAccess = "true"))
+	USoundCue* m_startingJingle = nullptr;
+	UPROPERTY(EditAnywhere, meta = (AllowPrivateAccess = "true"))
+	USoundCue* m_deathJingle = nullptr;
+	UPROPERTY(EditAnywhere, meta = (AllowPrivateAccess = "true"))
+	USoundCue* m_levelEndingJingle = nullptr;
+
+	UAudioComponent* m_currentMusic = nullptr;
+	UAudioComponent* m_currentJingle = nullptr;
 };

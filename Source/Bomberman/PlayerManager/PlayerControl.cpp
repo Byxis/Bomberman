@@ -61,6 +61,14 @@ void APlayerControl::BeginPlay()
 		ActualiseLife();
 		ActualiseScore();
 	}
+	else if (m_gameMode->GetCurrentGameState() == EGameState::StartingLevel)
+	{
+		m_startingHud = CreateWidget<UStartingHUD>(GetGameInstance(), m_startingHudClass, FName("StargingLevelWidget"));
+		if (m_startingHud != nullptr)
+		{
+			m_startingHud->AddToViewport();
+		}
+	}
 	PlayMusic();
 }
 
@@ -78,6 +86,35 @@ void APlayerControl::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
+	if (m_startDelay > 0)
+	{
+		m_startDelay -= DeltaTime;
+		return;
+	}
+
+	else if (m_gameMode != nullptr && m_gameMode->GetCurrentGameState() == EGameState::StartingLevel)
+	{
+		m_gameMode->SetCurrentGameState(EGameState::Playing);
+		m_startingHud->RemoveFromParent();
+
+		m_playerHud = CreateWidget<UPlayerHUD>(GetGameInstance(), m_playerHudClass, FName("PlayerWidget"));
+		if (m_playerHud != nullptr)
+		{
+			m_playerHud->AddToViewport();
+		}
+		ActualiseLife();
+		ActualiseScore();
+
+		PlayMusic();
+	}
+
+	if (m_gameMode != nullptr && m_gameMode->GetCurrentGameState() == EGameState::End && !m_hasEnded)
+	{
+		m_hasEnded = true;
+		PauseMusic(true);
+		PlayMusic();
+	}
+
 	ActualiseTimer();
 
 	if (m_isRespawning)
@@ -91,12 +128,13 @@ void APlayerControl::Tick(float DeltaTime)
 			
 	}
 
-	SpringArmComp->SetWorldLocationAndRotation(FVector(1700.0f, 900.0f, 1500.0f), FRotator(-90.0f, 0.0f, -90.0f));
+	SpringArmComp->SetWorldLocationAndRotation(FVector(1650, 850, 1500.0f), FRotator(-90.0f, 0.0f, -90.0f));
 }
 
 void APlayerControl::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 {
 	Super::SetupPlayerInputComponent(PlayerInputComponent);
+
 	PlayerInputComponent->BindAxis("MoveRight", this, &APlayerControl::MoveForward);
 	PlayerInputComponent->BindAxis("MoveForward", this, &APlayerControl::MoveRight);
 	PlayerInputComponent->BindAction("Action1", IE_Pressed, this, &APlayerControl::SpawnBomb);
@@ -106,7 +144,7 @@ void APlayerControl::SetupPlayerInputComponent(UInputComponent* PlayerInputCompo
 
 void APlayerControl::MoveForward(float _axis)
 {
-	if (!m_dead)
+	if (!m_dead && m_gameMode->GetCurrentGameState() == EGameState::Playing)
 	{
 		if (_axis > 0.2)
 			_axis = 1;
@@ -124,7 +162,7 @@ void APlayerControl::MoveForward(float _axis)
 
 void APlayerControl::MoveRight(float _axis)
 {
-	if (!m_dead)
+	if (!m_dead && m_gameMode->GetCurrentGameState() == EGameState::Playing)
 	{
 		if (_axis > 0.2)
 			_axis = 1;
@@ -143,14 +181,12 @@ void APlayerControl::MoveRight(float _axis)
 
 void APlayerControl::SpawnBomb()
 {
-	if (m_maxPlacedBomb > 0 && m_canPlaceBomb && !m_dead && hasPlaceToSpawnBomb())
+	if (m_maxPlacedBomb > 0 && m_canPlaceBomb && !m_dead && hasPlaceToSpawnBomb() && m_gameMode->GetCurrentGameState() == EGameState::Playing)
 	{
 		const FVector location(FGenericPlatformMath::RoundToInt((GetActorLocation().X - 50) / 100) * 100 + 50,
 			FGenericPlatformMath::RoundToInt((GetActorLocation().Y - 50) / 100) * 100 + 50,
 			50);
 		const FRotator rotation = GetActorRotation();
-
-		FString message = FString::Printf(TEXT("Location: X=%f, Y=%f, Z=%f, remaining:%f"), location.X, location.Y, location.Z, m_maxPlacedBomb);
 		AActor* spawnedbomb = GetWorld()->SpawnActor<AActor>(m_bomb, location, rotation);
 		if (spawnedbomb != nullptr)
 		{
@@ -160,15 +196,13 @@ void APlayerControl::SpawnBomb()
 			if (bombHandler != nullptr)
 				bombHandler->SetPower(m_gameInstance->GetBombPower());
 
-			SetPlacingBomb(true);
-			GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Red, message);
-			
+			SetPlacingBomb(true);			
 		}
 	}
 }
 void APlayerControl::Detonatebomb()
 {
-	if (m_gameInstance->HasDetonatorBonus() && !m_dead)
+	if (m_gameInstance->HasDetonatorBonus() && !m_dead && m_gameMode->GetCurrentGameState() == EGameState::Playing)
 	{
 		if (m_gameMode != nullptr)
 		{
@@ -192,8 +226,9 @@ void APlayerControl::SetCanPlaceBomb(bool _bool)
 
 void APlayerControl::Damage()
 {
-	if (!m_dead)
+	if (!m_dead && m_gameMode != nullptr && !m_gameMode->IsBonusLevel() && m_gameMode->GetCurrentGameState() == EGameState::Playing)
 	{
+		PauseMusic(true);
 		m_dead = true;
 		if (m_gameInstance != nullptr && m_gameInstance->GetLife() > 0)
 		{
@@ -319,9 +354,11 @@ void APlayerControl::PauseGame()
 	{
 		if (m_gameMode->GetCurrentGameState() == EGameState::Playing)
 		{
-			UE_LOG(LogTemp, Warning, TEXT("2"))
-				m_gameMode->SetCurrentGameState(EGameState::PauseMenu);
+			m_gameMode->SetCurrentGameState(EGameState::PauseMenu);
 			m_playerHud->RemoveFromParent();
+			PauseMusic(true);
+			PauseJingle(true);
+			m_gameMode->PauseAllSFX(true);
 			
 			m_pauseHud = CreateWidget<UPauseHUD>(GetGameInstance(), m_pauseHudClass, FName("PauseWidget"));
 			
@@ -337,6 +374,10 @@ void APlayerControl::PauseGame()
 			m_playerHud = CreateWidget<UPlayerHUD>(GetGameInstance(), m_playerHudClass, FName("PlayerWidget"));
 			
 			m_playerHud->AddToViewport();
+			m_gameMode->PauseAllSFX(false);
+			PauseJingle(false);
+			if(!m_dead)
+				PauseMusic(false);
 			GetWorld()->GetFirstPlayerController()->SetPause(false);
 			GetWorld()->GetFirstPlayerController()->SetShowMouseCursor(false);
 		}
@@ -350,6 +391,46 @@ void APlayerControl::OpenMainMenu()
 	m_mainMenuHud->AddToViewport();
 	GetWorld()->GetFirstPlayerController()->SetPause(true);
 	GetWorld()->GetFirstPlayerController()->SetShowMouseCursor(true);
+}
+
+void APlayerControl::OpenOptionsMenu()
+{
+	if (m_gameMode->GetCurrentGameState() == EGameState::PauseMenu)
+	{
+		m_pauseHud->RemoveFromParent();
+
+		m_optionHud = CreateWidget<UOptionHUD>(GetGameInstance(), m_optionHudClass, FName("OptionWidget"));
+
+		m_optionHud->AddToViewport();
+	}
+	else if (m_gameMode->GetCurrentGameState() == EGameState::Menu)
+	{
+		m_mainMenuHud->RemoveFromParent();
+
+		m_optionHud = CreateWidget<UOptionHUD>(GetGameInstance(), m_optionHudClass, FName("OptionWidget"));
+
+		m_optionHud->AddToViewport();
+	}
+}
+
+void APlayerControl::CloseOptionsMenu()
+{
+	if (m_gameMode->GetCurrentGameState() == EGameState::PauseMenu)
+	{
+		m_optionHud->RemoveFromParent();
+
+		m_pauseHud = CreateWidget<UPauseHUD>(GetGameInstance(), m_pauseHudClass, FName("PauseWidget"));
+
+		m_pauseHud->AddToViewport();
+	}
+	else if (m_gameMode->GetCurrentGameState() == EGameState::Menu)
+	{
+		m_optionHud->RemoveFromParent();
+
+		m_mainMenuHud = CreateWidget<UMainmenuHUD>(GetGameInstance(), m_mainMenuHudClass, FName("MainMenuwidget"));
+
+		m_mainMenuHud->AddToViewport();
+	}
 }
 
 bool APlayerControl::IsDead()
@@ -426,7 +507,7 @@ void APlayerControl::PlayMusic()
 		{
 			if (m_menuMusic != nullptr)
 			{
-				UGameplayStatics::PlaySound2D(GetWorld(), m_menuMusic, 1, 1, 0);
+				m_currentMusic = UGameplayStatics::SpawnSound2D(GetWorld(), m_menuMusic, m_gameInstance->GetMusicVolume(), 1, 0);
 			}
 			break;
 		}
@@ -436,17 +517,66 @@ void APlayerControl::PlayMusic()
 			{
 				if (m_bonusLevelMusic != nullptr)
 				{
-					UGameplayStatics::PlaySound2D(GetWorld(), m_bonusLevelMusic, 1, 1, 0);
+					m_currentMusic = UGameplayStatics::SpawnSound2D(GetWorld(), m_bonusLevelMusic, m_gameInstance->GetMusicVolume(), 1, 0);
 				}
 			}
 			else
 			{
 				if (m_levelMusic != nullptr)
 				{
-					UGameplayStatics::PlaySound2D(GetWorld(), m_levelMusic, 1, 1, 0);
+					m_currentMusic = UGameplayStatics::SpawnSound2D(GetWorld(), m_levelMusic, m_gameInstance->GetMusicVolume(), 1, 0);
 				}
 			}
 			break;
 		}
+	}
+}
+
+void APlayerControl::PauseMusic(bool _bool)
+{
+	if (m_currentMusic != nullptr)
+	{
+		m_currentMusic->SetPaused(_bool);
+	}
+}
+
+void APlayerControl::SetMusicVolume(float _volume)
+{
+	if (m_currentMusic != nullptr)
+	{
+		m_currentMusic->SetVolumeMultiplier(_volume);
+	}
+}
+
+void APlayerControl::PlayJingle()
+{
+	if (m_gameMode != nullptr && m_gameMode->GetCurrentGameState() == EGameState::StartingLevel)
+	{
+		if (m_startingJingle != nullptr)
+		{
+			m_currentJingle = UGameplayStatics::SpawnSound2D(GetWorld(), m_startingJingle, 1, 1, 0);
+		}
+	}
+	else if (m_dead)
+	{
+		if (m_deathJingle != nullptr)
+		{
+			m_currentJingle = UGameplayStatics::SpawnSound2D(GetWorld(), m_deathJingle, 1, 1, 0);
+		}
+	}
+	else if (m_hasEnded)
+	{
+		if (m_deathJingle != nullptr)
+		{
+			m_currentJingle = UGameplayStatics::SpawnSound2D(GetWorld(), m_deathJingle, 1, 1, 0);
+		}
+	}
+}
+
+void APlayerControl::PauseJingle(bool _bool)
+{
+	if (m_currentJingle != nullptr)
+	{
+		m_currentJingle->SetPaused(_bool);
 	}
 }

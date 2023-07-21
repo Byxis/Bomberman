@@ -3,20 +3,21 @@
 #include <Bomberman/Game/CustomGameInstance.h>
 #include "Kismet/GameplayStatics.h"
 #include <string>
+#include <Bomberman/PlayerManager/PlayerControl.h>
 
 void UMainmenuHUD::NativeConstruct()
 {
     Super::NativeConstruct();
 
     if (m_buttonPlay != nullptr)
-    {
         m_buttonPlay->OnClicked.AddDynamic(this, &UMainmenuHUD::StartPlaying);
-    }
+
+    if (m_buttonOption != nullptr)
+        m_buttonOption->OnClicked.AddDynamic(this, &UMainmenuHUD::OpenOptionMenu);
 
     if (m_buttonQuit != nullptr)
-    {
         m_buttonQuit->OnClicked.AddDynamic(this, &UMainmenuHUD::Quit);
-    }
+
     m_scores.Add(m_score1);
     m_scores.Add(m_score2);
     m_scores.Add(m_score3);
@@ -57,6 +58,15 @@ void UMainmenuHUD::StartPlaying()
     {
         gameInstance->ResetAll();
         UGameplayStatics::OpenLevel(GetWorld(), "Level_1");
+    }
+}
+
+void UMainmenuHUD::OpenOptionMenu()
+{
+    APlayerControl* playerControl = Cast<APlayerControl>(UGameplayStatics::GetPlayerPawn(GetWorld(), 0));
+    if (playerControl != nullptr)
+    {
+        playerControl->OpenOptionsMenu();
     }
 }
 

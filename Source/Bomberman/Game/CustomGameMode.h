@@ -5,12 +5,14 @@
 #include "Kismet/GameplayStatics.h"
 #include "Camera/CameraComponent.h"
 #include "CustomGameSave.h"
+#include <Bomberman/Bomb/Flames.h>
 #include "CustomGameMode.generated.h"
 
 UENUM()
 enum class EGameState : uint8
 {
 	Menu,
+	StartingLevel,
 	Playing,
 	PauseMenu,
 	End
@@ -32,6 +34,7 @@ public:
 	virtual void Tick(float DeltaTime) override;
 
 	void NextLevel();
+	void OpenLevel(FName _name);
 	void RestartLevel();
 	UFUNCTION(BlueprintPure)
 	EGameState GetCurrentGameState() const;
@@ -48,11 +51,14 @@ public:
 	bool CanSpawnBonus();
 	void AddSpawnedBonus(int _i);
 	bool IsLevelFinished();
-	void AddEnemy(AActor* enemy);
-	void RemoveEnemy(AActor* enemy);
+	void AddEnemy(AActor* _enemy);
+	void RemoveEnemy(AActor* _enemy);
+	void AddFlame(AFlames* _flame);
+	void RemoveFlame(AFlames* _flame);
 	int GetRemainingBonuses();
 	int GetTimer();
 	bool IsBonusLevel();
+	void PauseAllSFX(bool _bool);
 
 protected:
 	virtual void BeginPlay() override;
@@ -61,6 +67,7 @@ private:
 	EGameState m_currentGameState = EGameState::Playing;
 	TArray<FString> m_levels;
 	TArray<UBombHandler*> m_bombs;
+	TArray<AFlames*> m_flames;
 	TArray<AActor*> m_walls;
 	int m_maxBonusRound = 0;
 	int m_spawnedBonus = 0;
@@ -68,7 +75,9 @@ private:
 	bool m_hasExitSpawned = false;
 	float m_timer = 200.0f;
 	bool m_hasTimeExpired = false;
-	UCustomGameInstance* m_gameInstance = nullptr; 
+	UCustomGameInstance* m_gameInstance = nullptr;
+	float m_endingLevelTimer = 3.0f;
+	FName nextLevel = FName("");
 	
 	UPROPERTY(EditAnywhere, meta = (AllowPrivateAccess = "true"))
 	TSubclassOf<AActor> m_timerEnemy = nullptr;
