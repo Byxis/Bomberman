@@ -26,6 +26,8 @@ public:
 	void SetMusicVolume(float _volume);
 	float GetSFXVolume();
 	void SetSFXVolume(float _volume);
+	float GetJingleVolume();
+	void SetJingleVolume(float _volume);
 
 private:
 	UPROPERTY()

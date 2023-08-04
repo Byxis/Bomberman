@@ -4,6 +4,7 @@
 #include "Engine/GameInstance.h"
 #include "CustomGameSave.h"
 #include "Sound/SoundCue.h"
+#include <list>
 #include <Bomberman/Game/CustomGameMode.h>
 #include "CustomGameInstance.generated.h"
 
@@ -18,10 +19,12 @@ public:
 	virtual void Init() override;
 
 	int32 GetBombLimit();
+	int32 GetMaxBombLimit();
 	void AddBombLimit(int32 _bombLimit);
 	bool HasMaxedBombLimit();
 
 	int32 GetBombPower();
+	int32 GetMaxBombPower();
 	void AddBombPower(int32 _bombPower);
 	bool HasMaxedBombPower();
 
@@ -30,6 +33,7 @@ public:
 	void AddScore(int32 _score);
 
 	float GetSpeed();
+	float GetMaxSpeed();
 	void AddSpeed(float _speed);
 	bool HasMaxedSpeed();
 
@@ -52,8 +56,10 @@ public:
 	float GetMusicVolume();
 	void SetMusicVolume(float _amount);
 	float GetJingleVolume();
+	void SetJingleVolume(float _amount);
 	float GetSFXVolume();
 	void SetSFXVolume(float _amount);
+	void RemoveRandomBonus();
 
 private:
 	int32 m_bombLimit = 1;

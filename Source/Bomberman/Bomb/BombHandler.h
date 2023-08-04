@@ -23,6 +23,7 @@ public:
 	void OnPlayerLeaveBomb(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex);
 	bool IsExploding();
 	void PauseSFX(bool _bool);
+	void SetSFXVolume(float _amount);
 
 protected:
 	virtual void BeginPlay() override;

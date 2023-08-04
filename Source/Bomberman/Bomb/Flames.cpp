@@ -21,6 +21,24 @@ AFlames::AFlames(const FObjectInitializer& _objectInitializer)
 		RootComponent = m_collision;
 	}
 }
+
+void AFlames::BeginPlay()
+{
+	Super::BeginPlay();
+
+	UCustomGameInstance* gameInstance = Cast<UCustomGameInstance>(UGameplayStatics::GetGameInstance(GetWorld()));
+	if (m_flamesSFX != nullptr && gameInstance != nullptr)
+	{
+		m_flamesAudio = UGameplayStatics::CreateSound2D(GetWorld(), m_flamesSFX, gameInstance->GetSFXVolume(), 1, 0);
+	}
+
+	ACustomGameMode* gameMode = Cast<ACustomGameMode>(UGameplayStatics::GetGameMode(this));
+	if (gameMode != nullptr)
+	{
+		gameMode->AddFlame(this);
+	}
+}
+
 void AFlames::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
@@ -100,18 +118,10 @@ void AFlames::PauseSFX(bool _bool)
 	}
 }
 
-void AFlames::BeginPlay()
+void AFlames::SetSFXVolume(float _amount)
 {
-	Super::BeginPlay();
-
-	if (m_flamesSFX != nullptr)
+	if (m_flamesAudio != nullptr)
 	{
-		m_flamesAudio = UGameplayStatics::CreateSound2D(GetWorld(), m_flamesSFX, 1, 1, 0);
-	}
-
-	ACustomGameMode* gameMode = Cast<ACustomGameMode>(UGameplayStatics::GetGameMode(this));
-	if (gameMode != nullptr)
-	{
-		gameMode->AddFlame(this);
+		m_flamesAudio->SetVolumeMultiplier(_amount);
 	}
 }

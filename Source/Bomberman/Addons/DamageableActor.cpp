@@ -81,61 +81,61 @@ void ADamageableActor::SpawnBonus(EBonus bonus)
 			break;
 		case EBonus::Limit:
 		{
-			AActor* bonusActor = GetWorld()->SpawnActor<AActor>(m_bonusLimit, GetActorLocation(), GetActorRotation());
-			ABonus* bonus = Cast<ABonus>(bonusActor);
-			if (bonus != nullptr)
+			AActor* bonusLimitActor = GetWorld()->SpawnActor<AActor>(m_bonusLimit, GetActorLocation() - FVector(0,0,50), GetActorRotation());
+			ABonus* bonusLimit = Cast<ABonus>(bonusLimitActor);
+			if (bonusLimit != nullptr)
 			{
-				bonus->SetBonusType(0);
+				bonusLimit->SetBonusType(0);
 			}
 			break;
 		}
 		case EBonus::Power:
 		{
-			AActor* bonusActor = GetWorld()->SpawnActor<AActor>(m_bonusPower, GetActorLocation(), GetActorRotation());
-			ABonus* bonus = Cast<ABonus>(bonusActor);
-			if (bonus != nullptr)
+			AActor* bonusPowerActor = GetWorld()->SpawnActor<AActor>(m_bonusPower, GetActorLocation() - FVector(0, 0, 50), GetActorRotation());
+			ABonus* bonusPower = Cast<ABonus>(bonusPowerActor);
+			if (bonusPower != nullptr)
 			{
-				bonus->SetBonusType(1);
+				bonusPower->SetBonusType(1);
 			}
 			break;
 		}
 		case EBonus::Speed:
 		{
-			AActor* bonusActor = GetWorld()->SpawnActor<AActor>(m_bonusSpeed, GetActorLocation(), GetActorRotation());
-			ABonus* bonus = Cast<ABonus>(bonusActor);
-			if (bonus != nullptr)
+			AActor* bonusSpeedActor = GetWorld()->SpawnActor<AActor>(m_bonusSpeed, GetActorLocation() - FVector(0, 0, 50), GetActorRotation());
+			ABonus* bonusSpeed = Cast<ABonus>(bonusSpeedActor);
+			if (bonusSpeed != nullptr)
 			{
-				bonus->SetBonusType(2);
+				bonusSpeed->SetBonusType(2);
 			}
 			break;
 		}
 		case EBonus::Detonator:
 		{
-			AActor* bonusActor = GetWorld()->SpawnActor<AActor>(m_bonusDetonator, GetActorLocation(), GetActorRotation());
-			ABonus* bonus = Cast<ABonus>(bonusActor);
-			if (bonus != nullptr)
+			AActor* bonusDetonatorActor = GetWorld()->SpawnActor<AActor>(m_bonusDetonator, GetActorLocation() - FVector(0, 0, 50), GetActorRotation());
+			ABonus* bonusDetonator = Cast<ABonus>(bonusDetonatorActor);
+			if (bonusDetonator != nullptr)
 			{
-				bonus->SetBonusType(3);
+				bonusDetonator->SetBonusType(3);
 			}
 			break;
 		}
 		case EBonus::Vest:
 		{
-			AActor* bonusActor = GetWorld()->SpawnActor<AActor>(m_bonusVest, GetActorLocation(), GetActorRotation());
-			ABonus* bonus = Cast<ABonus>(bonusActor);
-			if (bonus != nullptr)
+			AActor* bonusVestActor = GetWorld()->SpawnActor<AActor>(m_bonusVest, GetActorLocation() - FVector(0, 0, 50), GetActorRotation());
+			ABonus* bonusVest = Cast<ABonus>(bonusVestActor);
+			if (bonusVest != nullptr)
 			{
-				bonus->SetBonusType(4);
+				bonusVest->SetBonusType(4);
 			}
 			break;
 		}
 		case EBonus::GhostWalls:
 		{
-			AActor* bonusActor = GetWorld()->SpawnActor<AActor>(m_bonusGhostWalls, GetActorLocation(), GetActorRotation());
-			ABonus* bonus = Cast<ABonus>(bonusActor);
-			if (bonus != nullptr)
+			AActor* bonusGhostWallsActor = GetWorld()->SpawnActor<AActor>(m_bonusGhostWalls, GetActorLocation() - FVector(0, 0, 50), GetActorRotation());
+			ABonus* bonusGhostWalls = Cast<ABonus>(bonusGhostWallsActor);
+			if (bonusGhostWalls != nullptr)
 			{
-				bonus->SetBonusType(5);
+				bonusGhostWalls->SetBonusType(5);
 			}
 			break;
 		}

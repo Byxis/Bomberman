@@ -77,3 +77,13 @@ void UCustomGameSave::SetSFXVolume(float _volume)
 {
     m_sfxVolume = _volume;
 }
+
+float UCustomGameSave::GetJingleVolume()
+{
+    return m_jingleVolume;
+}
+
+void UCustomGameSave::SetJingleVolume(float _volume)
+{
+    m_jingleVolume = _volume;
+}

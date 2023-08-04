@@ -70,9 +70,11 @@ void UBombHandler::BeginPlay()
 		gameMode->AddBomb(this);
 	}
 
-	if (m_smokeSFX != nullptr)
+	UCustomGameInstance* gameInstance = Cast<UCustomGameInstance>(UGameplayStatics::GetGameInstance(GetWorld()));
+
+	if (m_smokeSFX != nullptr && gameInstance != nullptr)
 	{
-		m_smokeAudio = UGameplayStatics::SpawnSound2D(GetWorld(), m_smokeSFX, 1, 1, 0);
+		m_smokeAudio = UGameplayStatics::SpawnSound2D(GetWorld(), m_smokeSFX, gameInstance->GetSFXVolume(), 1, 0);
 	}
 }
 
@@ -265,5 +267,17 @@ void UBombHandler::PauseSFX(bool _bool)
 	if (m_smokeAudio != nullptr)
 	{
 		m_smokeAudio->SetPaused(_bool);
+	}
+}
+
+void UBombHandler::SetSFXVolume(float _amount)
+{
+	if (m_explosionAudio != nullptr)
+	{
+		m_explosionAudio->SetVolumeMultiplier(_amount);
+	}
+	if (m_smokeAudio != nullptr)
+	{
+		m_smokeAudio->SetVolumeMultiplier(_amount);
 	}
 }

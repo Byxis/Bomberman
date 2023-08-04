@@ -6,7 +6,7 @@
 AExitScript::AExitScript(const FObjectInitializer& _objectInitializer)
 	:Super(_objectInitializer)
 {
-	PrimaryActorTick.bCanEverTick = false;
+	PrimaryActorTick.bCanEverTick = true;
 	m_collision = CreateDefaultSubobject<UBoxComponent>(TEXT("collision"));
 	if (m_collision != nullptr)
 	{
@@ -18,13 +18,29 @@ AExitScript::AExitScript(const FObjectInitializer& _objectInitializer)
 	}
 }
 
+void AExitScript::Tick(float DeltaTime)
+{
+	if (m_gameMode == nullptr)
+	{
+		m_gameMode = Cast<ACustomGameMode>(UGameplayStatics::GetGameMode(this));
+	}
+
+	if (m_gameMode->IsLevelFinished() && !m_isOpened)
+	{
+		m_isOpened = true;
+	}
+}
+
 void AExitScript::OnPlayerEnterExit(class UPrimitiveComponent* HitComp, class AActor* OtherActor, class UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
-	ACustomGameMode* gameMode = Cast<ACustomGameMode>(UGameplayStatics::GetGameMode(this));
-	APlayerControl* playerControl = Cast<APlayerControl>(OtherActor);
-	if (gameMode != nullptr && gameMode->IsLevelFinished() && playerControl != nullptr)
+	if (m_gameMode == nullptr)
 	{
-		gameMode->NextLevel();
+		m_gameMode = Cast<ACustomGameMode>(UGameplayStatics::GetGameMode(this));
+	} 
+	APlayerControl* playerControl = Cast<APlayerControl>(OtherActor);
+	if (m_gameMode != nullptr && m_gameMode->IsLevelFinished() && playerControl != nullptr)
+	{
+		m_gameMode->NextLevel();
 	}
 }
 

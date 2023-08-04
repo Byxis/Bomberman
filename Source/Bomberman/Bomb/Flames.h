@@ -18,6 +18,7 @@ public:
 	UFUNCTION()
 	void OnEntityInteract(class UPrimitiveComponent* HitComp, class AActor* OtherActor, class UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
 	void PauseSFX(bool _bool);
+	void SetSFXVolume(float _amount);
 
 protected:
 	virtual void BeginPlay() override;

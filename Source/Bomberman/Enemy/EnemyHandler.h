@@ -46,4 +46,5 @@ private:
 
 	void ChangeDirection();
 	bool IsDirectionAvailable(FVector _direction);
+	void UnblockEnemy();
 };

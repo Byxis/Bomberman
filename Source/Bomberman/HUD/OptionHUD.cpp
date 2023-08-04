@@ -4,7 +4,6 @@
 
 void UOptionHUD::Quit()
 {
-    SaveKeys();
     SaveVolumes();
     APlayerControl* playerControl = Cast<APlayerControl>(UGameplayStatics::GetPlayerPawn(GetWorld(), 0));
     if (playerControl != nullptr)
@@ -17,10 +16,8 @@ void UOptionHUD::SaveVolumes()
 {
     UCustomGameInstance* gameInstance = Cast<UCustomGameInstance>(UGameplayStatics::GetGameInstance(GetWorld()));
     gameInstance->SetMusicVolume(m_musicSlider->GetValue());
-}
-
-void UOptionHUD::SaveKeys()
-{
+    gameInstance->SetJingleVolume(m_jingleSlider->GetValue());
+    gameInstance->SetSFXVolume(m_soundFxSlider->GetValue());
 }
 
 void UOptionHUD::NativeConstruct()
@@ -37,12 +34,20 @@ void UOptionHUD::NativeConstruct()
             m_musicSlider->SetValue(gameInstance->GetMusicVolume());
         }
     }
+    if (m_jingleSlider != nullptr)
+    {
+        UCustomGameInstance* gameInstance = Cast<UCustomGameInstance>(UGameplayStatics::GetGameInstance(GetWorld()));
+        if (gameInstance != nullptr)
+        {
+            m_jingleSlider->SetValue(gameInstance->GetJingleVolume());
+        }
+    }
     if (m_soundFxSlider != nullptr)
     {
         UCustomGameInstance* gameInstance = Cast<UCustomGameInstance>(UGameplayStatics::GetGameInstance(GetWorld()));
         if (gameInstance != nullptr)
         {
-            m_soundFxSlider->SetValue(gameInstance->GetMusicVolume());
+            m_soundFxSlider->SetValue(gameInstance->GetSFXVolume());
         }
     }
 }

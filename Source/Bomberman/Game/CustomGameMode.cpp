@@ -5,6 +5,7 @@
 #include "Kismet/GameplayStatics.h"
 #include "./Bomberman/Bomb/BombHandler.h"
 #include <Bomberman/Addons/DamageableActor.h>
+#include "./Bomberman/Enemy/EnemySpawner.h"
 
 
 ACustomGameMode::ACustomGameMode()
@@ -28,37 +29,28 @@ ACustomGameMode::ACustomGameMode()
 
 void ACustomGameMode::BeginPlay()
 {
+	m_spawner = Cast<AEnemySpawner>(UGameplayStatics::GetActorOfClass(GetWorld(), AEnemySpawner::StaticClass()));
+	m_gameInstance = Cast<UCustomGameInstance>(UGameplayStatics::GetGameInstance(GetWorld()));
+
 	if (UGameplayStatics::GetCurrentLevelName(GetWorld(), true).Equals(TEXT("Level_0")))
 	{
 		SetCurrentGameState(EGameState::Menu);
+	}
+	else if (UGameplayStatics::GetCurrentLevelName(GetWorld(), true).Equals(TEXT("Level_End")))
+	{
+		SetCurrentGameState(EGameState::End);
 	}
 	else
 	{
 		if (IsBonusLevel())
 		{
-			if (m_timerEnemy != nullptr)
-			{
-				const FRotator rotation(0, 0, 0);
-				for (int i = 0; i < 2; i++)
-				{
-					for (int j = 0; j < 4; j++)
-					{
-						FVector location(150 + 700 * j, 150 + 1400 * i, 40);
-						GetWorld()->SpawnActor<AActor>(m_timerEnemy, location, rotation);
-					}
-				}
-				FVector location(150, 150 + 700, 40);
-				GetWorld()->SpawnActor<AActor>(m_timerEnemy, location, rotation);
-				location = FVector(150, 150 + 2800, 40);
-				GetWorld()->SpawnActor<AActor>(m_timerEnemy, location, rotation);
-			}
+			if(m_spawner != nullptr)
+				m_spawner->SpawnEnemies(true);
 			m_timer = 30.0f;
 		}
 		SetCurrentGameState(EGameState::StartingLevel);
 	}
 	Super::BeginPlay();
-
-	m_gameInstance = Cast<UCustomGameInstance>(UGameplayStatics::GetGameInstance(GetWorld()));
 }
 
 void ACustomGameMode::Tick(float DeltaTime)
@@ -91,41 +83,11 @@ void ACustomGameMode::Tick(float DeltaTime)
 		}
 		m_enemies.Empty();
 
-		if (m_timerEnemy != nullptr)
-		{
-			const FRotator rotation(0, 0, 0);
-			for (int i = 0; i < 2; i++)
-			{
-				for (int j = 0; j < 4; j++)
-				{
-					FVector location(150 + 700 * j, 150 + 1400 * i, 40);
-					GetWorld()->SpawnActor<AActor>(m_timerEnemy, location, rotation);
-				}
-			}
-			FVector location(150, 150 + 700, 40);
-			GetWorld()->SpawnActor<AActor>(m_timerEnemy, location, rotation);
-			location = FVector(150, 150 + 2800, 40);
-			GetWorld()->SpawnActor<AActor>(m_timerEnemy, location, rotation);
-		}
+		if(m_spawner != nullptr)
+			m_spawner->SpawnEnemies(false);
 
 		m_hasTimeExpired = true;
 		SetActiveWallsGhost();
-	}
-
-	if (IsBonusLevel())
-	{
-		if(m_enemies.Num() < 10 && m_timerEnemy != nullptr)
-		{
-			while (m_enemies.Num() < 10)
-			{
-				int32 randomi = std::rand() % 2;
-				int32 randomj = std::rand() % 4;
-
-				FVector location(150 + 700 * randomj, 150 + 1400 * randomi, 40);
-				const FRotator rotation(0, 0, 0);
-				GetWorld()->SpawnActor<AActor>(m_timerEnemy, location, rotation);
-			}
-		}
 	}
 }
 
@@ -147,7 +109,13 @@ void ACustomGameMode::NextLevel()
 			if (i <= m_levels.Num() - 2)
 			{
 				nextLevel = FName(m_levels[i + 1]);
-				SetCurrentGameState(EGameState::End);
+				SetCurrentGameState(EGameState::LevelEnd);
+				SetExitSpawned(false);
+			}
+			if (i == m_levels.Num() - 1)
+			{
+				nextLevel = FName("Level_End");
+				SetCurrentGameState(EGameState::LevelEnd);
 				SetExitSpawned(false);
 			}
 			break;
@@ -176,7 +144,7 @@ void ACustomGameMode::AddWall(AActor* _actor)
 	UStaticMeshComponent* mesh = _actor->GetComponentByClass<UStaticMeshComponent>();
 	if (mesh != nullptr)
 	{
-		if (m_hasTimeExpired)
+		if (m_hasTimeExpired && m_gameInstance != nullptr)
 		{
 			if (m_gameInstance->HasGhostWallsBonus())
 			{
@@ -291,6 +259,11 @@ void ACustomGameMode::RemoveEnemy(AActor* _enemy)
 	m_enemies.Remove(_enemy);
 }
 
+TArray<AActor*> ACustomGameMode::GetEnemies()
+{
+	return m_enemies;
+}
+
 void ACustomGameMode::AddFlame(AFlames* _flame)
 {
 	m_flames.Add(_flame);
@@ -326,5 +299,18 @@ void ACustomGameMode::PauseAllSFX(bool _bool)
 	for (AFlames* flame : m_flames)
 	{
 		flame->PauseSFX(_bool);
+	}
+}
+
+void ACustomGameMode::SetSFXSounds(float _amount)
+{
+	for (UBombHandler* bomb : m_bombs)
+	{
+		bomb->SetSFXVolume(_amount);
+	}
+
+	for (AFlames* flame : m_flames)
+	{
+		flame->SetSFXVolume(_amount);
 	}
 }

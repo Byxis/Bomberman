@@ -15,11 +15,12 @@ enum class EGameState : uint8
 	StartingLevel,
 	Playing,
 	PauseMenu,
+	LevelEnd,
 	End
 };
 
 class UBombHandler;
-
+class AEnemySpawner;
 class UCustomGameInstance;
 
 UCLASS()
@@ -53,12 +54,14 @@ public:
 	bool IsLevelFinished();
 	void AddEnemy(AActor* _enemy);
 	void RemoveEnemy(AActor* _enemy);
+	TArray<AActor*> GetEnemies();
 	void AddFlame(AFlames* _flame);
 	void RemoveFlame(AFlames* _flame);
 	int GetRemainingBonuses();
 	int GetTimer();
 	bool IsBonusLevel();
 	void PauseAllSFX(bool _bool);
+	void SetSFXSounds(float _amount);
 
 protected:
 	virtual void BeginPlay() override;
@@ -78,6 +81,7 @@ private:
 	UCustomGameInstance* m_gameInstance = nullptr;
 	float m_endingLevelTimer = 3.0f;
 	FName nextLevel = FName("");
+	AEnemySpawner* m_spawner = nullptr;
 	
 	UPROPERTY(EditAnywhere, meta = (AllowPrivateAccess = "true"))
 	TSubclassOf<AActor> m_timerEnemy = nullptr;

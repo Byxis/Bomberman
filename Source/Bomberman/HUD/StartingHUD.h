@@ -16,5 +16,24 @@ protected:
 public:
 	void SetLevelText();
 	UPROPERTY(EditAnywhere, meta = (BindWidget))
-	class UTextBlock* m_levelText = nullptr;
+		class UTextBlock* m_levelText = nullptr;
+
+
+	UPROPERTY(EditAnywhere, meta = (BindWidget))
+		class UTextBlock* m_limitText = nullptr;
+
+	UPROPERTY(EditAnywhere, meta = (BindWidget))
+		class UTextBlock* m_powerText = nullptr;
+
+	UPROPERTY(EditAnywhere, meta = (BindWidget))
+		class UTextBlock* m_speedText = nullptr;
+
+	UPROPERTY(EditAnywhere, meta = (BindWidget))
+		class UTextBlock* m_detonatorText = nullptr;
+
+	UPROPERTY(EditAnywhere, meta = (BindWidget))
+		class UTextBlock* m_vestText = nullptr;
+
+	UPROPERTY(EditAnywhere, meta = (BindWidget))
+		class UTextBlock* m_ghostWallsText = nullptr;
 };

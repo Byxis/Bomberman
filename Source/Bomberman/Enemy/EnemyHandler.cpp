@@ -65,7 +65,7 @@ void AEnemyHandler::Tick(float DeltaTime)
 	if (m_currentDirection == EDirection::North)
 	{
 		position.Y -= m_speed * DeltaTime;
-		if (std::fmod(position.Y+50, 100) < 10)
+		if (fmod(position.Y+50, 100) < 10)
 		{
 			ChangeDirection();
 		}
@@ -73,7 +73,7 @@ void AEnemyHandler::Tick(float DeltaTime)
 	else if (m_currentDirection == EDirection::South)
 	{
 		position.Y += m_speed * DeltaTime;
-		if (std::fmod(position.Y + 50, 100) < 10)
+		if (fmod(position.Y + 50, 100) < 10)
 		{
 			ChangeDirection();
 		}
@@ -81,7 +81,7 @@ void AEnemyHandler::Tick(float DeltaTime)
 	else if (m_currentDirection == EDirection::West)
 	{
 		position.X -= m_speed * DeltaTime;
-		if (std::fmod(position.X + 50, 100) < 10)
+		if (fmod(position.X + 50, 100) < 10)
 		{
 			ChangeDirection();
 		}
@@ -89,7 +89,7 @@ void AEnemyHandler::Tick(float DeltaTime)
 	else if (m_currentDirection == EDirection::East)
 	{
 		position.X += m_speed * DeltaTime;
-		if (std::fmod(position.X + 50, 100) < 10)
+		if (fmod(position.X + 50, 100) < 10)
 		{
 			ChangeDirection();
 		}
@@ -98,6 +98,7 @@ void AEnemyHandler::Tick(float DeltaTime)
 	{
 		ChangeDirection();
 	}
+	UnblockEnemy();
 	SetActorLocation(position);
 }
 
@@ -222,21 +223,34 @@ void AEnemyHandler::ChangeDirection()
 bool AEnemyHandler::IsDirectionAvailable(FVector _direction)
 {
 	FCollisionQueryParams* CQP = new FCollisionQueryParams();
-	CQP->AddIgnoredActor(this);
 	TArray<FHitResult> hitResults;
+	CQP->AddIgnoredActor(this);
+	if (m_playerPawn != nullptr)
+	{
+		CQP->AddIgnoredActor(m_playerPawn);
+	}
 
 	if (GetWorld()->LineTraceMultiByChannel(hitResults, GetActorLocation(), GetActorLocation()+_direction, ECC_OverlapAll_Deprecated, *CQP))
 	{
-		for (FHitResult& hitResult : hitResults)
+		if (hitResults.Num() != 0)
 		{
-			AActor* actor = hitResult.GetActor();
-			if (actor != nullptr)
-			{
-				APlayerControl* playerControl = Cast<APlayerControl>(actor);
-				if (playerControl == nullptr)
-					return false;
-			}
+			return false;
 		}
 	}
 	return true;
+}
+
+void AEnemyHandler::UnblockEnemy()
+{
+	FVector position = GetActorLocation();
+
+	if (position.X > 3150)
+		position.X = 3150;
+	else if (position.X < 150)
+		position.X = 150;
+
+	if (position.Y > 1550)
+		position.Y = 1550;
+	else if (position.Y < 650)
+		position.Y = 650;
 }

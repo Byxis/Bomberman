@@ -6,7 +6,7 @@ public class Bomberman : ModuleRules
 	{
 		PCHUsage = PCHUsageMode.UseExplicitOrSharedPCHs;
 	
-		PublicDependencyModuleNames.AddRange(new string[] { "Core", "CoreUObject", "Engine", "InputCore", "Niagara", "UMG", "EnhancedInput", "InputCore" });
+		PublicDependencyModuleNames.AddRange(new string[] { "Core", "CoreUObject", "Engine", "InputCore", "Niagara", "UMG", "EnhancedInput", "InputCore", "LevelSequence", "MovieSceneTracks" });
 
 		PrivateDependencyModuleNames.AddRange(new string[] {  });
 

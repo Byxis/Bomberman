@@ -3,6 +3,7 @@
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
 #include <stdlib.h>
+#include <list>
 #include "Bonus.h"
 #include <Bomberman/Game/CustomGameInstance.h>
 #include "DamageableActor.generated.h"

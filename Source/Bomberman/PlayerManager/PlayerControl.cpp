@@ -64,12 +64,23 @@ void APlayerControl::BeginPlay()
 	else if (m_gameMode->GetCurrentGameState() == EGameState::StartingLevel)
 	{
 		m_startingHud = CreateWidget<UStartingHUD>(GetGameInstance(), m_startingHudClass, FName("StargingLevelWidget"));
+		PlayJingle();
 		if (m_startingHud != nullptr)
 		{
 			m_startingHud->AddToViewport();
 		}
 	}
+	else if (m_gameMode->GetCurrentGameState() == EGameState::End)
+	{
+		m_startDelay = 15;
+	}
 	PlayMusic();
+	if (m_touchInterface != nullptr)
+	{
+		GetWorld()->GetFirstPlayerController()->SetShowMouseCursor(true);
+		GetWorld()->GetFirstPlayerController()->SetVirtualJoystickVisibility(true);
+		GetWorld()->GetFirstPlayerController()->ActivateTouchInterface(m_touchInterface);
+	}
 }
 
 void APlayerControl::EndPlay(const EEndPlayReason::Type EndPlayReason)
@@ -86,13 +97,12 @@ void APlayerControl::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
-	if (m_startDelay > 0)
+	if (m_startDelay > 0 && m_gameMode != nullptr && (m_gameMode->GetCurrentGameState() == EGameState::StartingLevel || m_gameMode->GetCurrentGameState() == EGameState::End) )
 	{
 		m_startDelay -= DeltaTime;
 		return;
 	}
-
-	else if (m_gameMode != nullptr && m_gameMode->GetCurrentGameState() == EGameState::StartingLevel)
+	else if (m_startDelay < 0 && m_gameMode != nullptr && m_gameMode->GetCurrentGameState() == EGameState::StartingLevel)
 	{
 		m_gameMode->SetCurrentGameState(EGameState::Playing);
 		m_startingHud->RemoveFromParent();
@@ -107,8 +117,18 @@ void APlayerControl::Tick(float DeltaTime)
 
 		PlayMusic();
 	}
+	else if (m_startDelay < 0 && m_gameMode != nullptr && m_gameMode->GetCurrentGameState() == EGameState::End)
+	{
+		m_endHud = CreateWidget<UGameoverHUD>(GetGameInstance(), m_endHudClass, FName("PlayerWidget"));
+		if (m_endHud != nullptr)
+		{
+			m_endHud->AddToViewport();
+			GetWorld()->GetFirstPlayerController()->SetPause(true);
+			GetWorld()->GetFirstPlayerController()->SetShowMouseCursor(true);
+		}
+	}
 
-	if (m_gameMode != nullptr && m_gameMode->GetCurrentGameState() == EGameState::End && !m_hasEnded)
+	if (m_gameMode != nullptr && m_gameMode->GetCurrentGameState() == EGameState::LevelEnd && !m_hasEnded)
 	{
 		m_hasEnded = true;
 		PauseMusic(true);
@@ -128,7 +148,7 @@ void APlayerControl::Tick(float DeltaTime)
 			
 	}
 
-	SpringArmComp->SetWorldLocationAndRotation(FVector(1650, 850, 1500.0f), FRotator(-90.0f, 0.0f, -90.0f));
+	SpringArmComp->SetWorldLocationAndRotation(FVector(1650, 850, 1650.0f), FRotator(-90.0f, 0.0f, -90.0f));
 }
 
 void APlayerControl::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
@@ -230,12 +250,14 @@ void APlayerControl::Damage()
 	{
 		PauseMusic(true);
 		m_dead = true;
+		PlayJingle();
 		if (m_gameInstance != nullptr && m_gameInstance->GetLife() > 0)
 		{
 			m_gameInstance->AddLife(-1);
+			m_gameInstance->RemoveRandomBonus();
 			ActualiseLife();
 			m_isRespawning = true;
-			m_respawningTimer = 5.0f;
+			m_respawningTimer = 8.0f;
 		}
 		else
 		{
@@ -538,6 +560,10 @@ void APlayerControl::PauseMusic(bool _bool)
 	{
 		m_currentMusic->SetPaused(_bool);
 	}
+	if (m_currentJingle != nullptr)
+	{
+		m_currentJingle->SetPaused(_bool);
+	}
 }
 
 void APlayerControl::SetMusicVolume(float _volume)
@@ -554,21 +580,21 @@ void APlayerControl::PlayJingle()
 	{
 		if (m_startingJingle != nullptr)
 		{
-			m_currentJingle = UGameplayStatics::SpawnSound2D(GetWorld(), m_startingJingle, 1, 1, 0);
+			m_currentJingle = UGameplayStatics::SpawnSound2D(GetWorld(), m_startingJingle, m_gameInstance->GetJingleVolume(), 1, 0);
 		}
 	}
 	else if (m_dead)
 	{
 		if (m_deathJingle != nullptr)
 		{
-			m_currentJingle = UGameplayStatics::SpawnSound2D(GetWorld(), m_deathJingle, 1, 1, 0);
+			m_currentJingle = UGameplayStatics::SpawnSound2D(GetWorld(), m_deathJingle, m_gameInstance->GetJingleVolume(), 1, 0);
 		}
 	}
 	else if (m_hasEnded)
 	{
 		if (m_deathJingle != nullptr)
 		{
-			m_currentJingle = UGameplayStatics::SpawnSound2D(GetWorld(), m_deathJingle, 1, 1, 0);
+			m_currentJingle = UGameplayStatics::SpawnSound2D(GetWorld(), m_deathJingle, m_gameInstance->GetJingleVolume(), 1, 0);
 		}
 	}
 }
@@ -578,5 +604,13 @@ void APlayerControl::PauseJingle(bool _bool)
 	if (m_currentJingle != nullptr)
 	{
 		m_currentJingle->SetPaused(_bool);
+	}
+}
+
+void APlayerControl::SetJingleVolume(float _volume)
+{
+	if (m_currentJingle != nullptr)
+	{
+		m_currentJingle->SetVolumeMultiplier(_volume);
 	}
 }

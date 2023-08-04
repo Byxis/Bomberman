@@ -1,6 +1,7 @@
 #include "CustomGameInstance.h"
 #include <Bomberman/PlayerManager/PlayerControl.h>
 #include <Kismet/GameplayStatics.h>
+#include <Bomberman/Addons/Bonus.h>
 
 UCustomGameInstance::UCustomGameInstance()
 {}
@@ -18,6 +19,11 @@ int32 UCustomGameInstance::GetBombLimit()
     return m_bombLimit;
 }
 
+int32 UCustomGameInstance::GetMaxBombLimit()
+{
+    return m_maxBombLimit;
+}
+
 void UCustomGameInstance::AddBombLimit(int32 _bombLimit)
 {
     m_bombLimit += _bombLimit;
@@ -31,6 +37,11 @@ bool UCustomGameInstance::HasMaxedBombLimit()
 int32 UCustomGameInstance::GetBombPower()
 {
     return m_bombPower;
+}
+
+int32 UCustomGameInstance::GetMaxBombPower()
+{
+    return m_maxBombPower;
 }
 
 void UCustomGameInstance::AddBombPower(int32 _bombPower)
@@ -71,6 +82,11 @@ void UCustomGameInstance::AddScore(int32 _score)
 float UCustomGameInstance::GetSpeed()
 {
     return m_speed;
+}
+
+float UCustomGameInstance::GetMaxSpeed()
+{
+    return m_maxSpeed;
 }
 
 void UCustomGameInstance::AddSpeed(float _speed)
@@ -189,7 +205,6 @@ UCustomGameSave* UCustomGameInstance::GetActualGameSave()
 
 void UCustomGameInstance::SaveGameSave(UCustomGameSave* _gameSave)
 {
-    UE_LOG(LogTemp, Warning, TEXT("Saved"))
     UGameplayStatics::SaveGameToSlot(_gameSave, TEXT("BombermanSave"), 0);
 }
 
@@ -248,10 +263,89 @@ void UCustomGameInstance::SetSFXVolume(float _amount)
     UCustomGameSave* gameSave = GetActualGameSave();
     gameSave->SetSFXVolume(m_sfxVolume);
     SaveGameSave(gameSave);
+    ACustomGameMode* gameMode = Cast<ACustomGameMode>(UGameplayStatics::GetGameMode(this));
+}
 
+void UCustomGameInstance::RemoveRandomBonus()
+{
+    std::list<EBonus> bonusList;
+    if (m_bombLimit > 1)
+    {
+        bonusList.push_front(EBonus::Limit);
+    }
+    if (m_bombPower > 1)
+    {
+        bonusList.push_front(EBonus::Power);
+    }
+    if (m_speed > 0.9)
+    {
+        bonusList.push_front(EBonus::Speed);
+    }
+    if (m_detonator)
+    {
+        bonusList.push_front(EBonus::Detonator);
+    }
+    if (m_vest)
+    {
+        bonusList.push_front(EBonus::Vest);
+    }
+    if (m_ghostWalls)
+    {
+        bonusList.push_front(EBonus::GhostWalls);
+    }
+
+    if (bonusList.size() != 0)
+    {
+        std::list<EBonus>::iterator it = bonusList.begin();
+        std::advance(it, std::rand() % bonusList.size());
+        EBonus bonus = *it;
+
+        switch (bonus)
+        {
+        case EBonus::Limit:
+            m_bombLimit -= 1;
+            break;
+        case EBonus::Power:
+            m_bombPower -= 1;
+            break;
+        case EBonus::Speed:
+            m_bombLimit -= 0.5;
+            break;
+        case EBonus::Detonator:
+            m_detonator = false;
+            break;
+        case EBonus::Vest:
+            m_vest = false;
+            break;
+        case EBonus::GhostWalls:
+            m_ghostWalls = false;
+            break;
+        }
+    }
 }
 
 float UCustomGameInstance::GetJingleVolume()
 {
-    return 0.0f;
+    if (m_jingleVolume == -1)
+    {
+        UCustomGameSave* gameSave = GetActualGameSave();
+        if (gameSave != nullptr)
+        {
+            m_jingleVolume = gameSave->GetJingleVolume();
+        }
+    }
+    return m_jingleVolume;
+}
+
+void UCustomGameInstance::SetJingleVolume(float _amount)
+{
+    m_jingleVolume = _amount;
+    UCustomGameSave* gameSave = GetActualGameSave();
+    gameSave->SetJingleVolume(m_jingleVolume);
+    SaveGameSave(gameSave);
+    APlayerControl* playerControl = Cast<APlayerControl>(UGameplayStatics::GetPlayerPawn(GetWorld(), 0));
+    if (playerControl != nullptr)
+    {
+        playerControl->SetJingleVolume(_amount);
+    }
 }
