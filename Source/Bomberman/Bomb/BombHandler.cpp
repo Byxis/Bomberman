@@ -42,45 +42,18 @@ void UBombHandler::SetPower(int32 _newPower)
 void UBombHandler::BeginPlay()
 {
 	Super::BeginPlay();
-	
-	m_player = Cast<APlayerControl>(UGameplayStatics::GetPlayerCharacter(GetWorld(), 0));
-
-	check(m_player != nullptr);
-	check(m_owner != nullptr);
-	if (m_owner != nullptr)
-	{
-		m_skeleton = Cast<USkeletalMeshComponent>(m_owner->GetComponentByClass(USkeletalMeshComponent::StaticClass()));
-		m_owner->SetActorTickEnabled(false);
-	}
-
-	if (m_skeleton != nullptr)
-	{
-		m_material = m_skeleton->CreateDynamicMaterialInstance(0, m_skeleton->GetMaterial(0));
-		m_collision->SetCollisionProfileName(FName("GhostBomb"), true);
-	}
-
-	if (m_player != nullptr && m_owner != nullptr)
-	{
-		m_isInitalisationDone = true;
-		m_owner->SetActorTickEnabled(true);
-	}
-	ACustomGameMode* gameMode = Cast<ACustomGameMode>(UGameplayStatics::GetGameMode(this));
-	if (gameMode != nullptr)
-	{
-		gameMode->AddBomb(this);
-	}
-
-	UCustomGameInstance* gameInstance = Cast<UCustomGameInstance>(UGameplayStatics::GetGameInstance(GetWorld()));
-
-	if (m_smokeSFX != nullptr && gameInstance != nullptr)
-	{
-		m_smokeAudio = UGameplayStatics::SpawnSound2D(GetWorld(), m_smokeSFX, gameInstance->GetSFXVolume(), 1, 0);
-	}
 }
 
 void UBombHandler::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
 {
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
+
+	if (!m_isInitalisationDone)
+	{
+		TryInit();
+		return;
+	}
+		
 
 	m_timer -= DeltaTime;
 
@@ -236,6 +209,46 @@ void UBombHandler::CheckIfWall(FVector _startTrace, FVector _endTrace)
 				}
 			}
 		}
+	}
+}
+
+void UBombHandler::TryInit()
+{
+	m_player = Cast<APlayerControl>(UGameplayStatics::GetPlayerCharacter(GetWorld(), 0));
+
+	if (m_owner != nullptr)
+	{
+		m_skeleton = Cast<USkeletalMeshComponent>(m_owner->GetComponentByClass(USkeletalMeshComponent::StaticClass()));
+		m_owner->SetActorTickEnabled(false);
+	}
+
+	if (m_skeleton != nullptr)
+	{
+		m_material = m_skeleton->CreateDynamicMaterialInstance(0, m_skeleton->GetMaterial(0));
+		m_collision->SetCollisionProfileName(FName("GhostBomb"), true);
+	}
+
+	if (m_player != nullptr && m_owner != nullptr)
+	{
+		m_owner->SetActorTickEnabled(true);
+	}
+
+	ACustomGameMode* gameMode = Cast<ACustomGameMode>(UGameplayStatics::GetGameMode(this));
+	if (gameMode != nullptr)
+	{
+		gameMode->AddBomb(this);
+	}
+
+	UCustomGameInstance* gameInstance = Cast<UCustomGameInstance>(UGameplayStatics::GetGameInstance(GetWorld()));
+
+	if (m_smokeSFX != nullptr && gameInstance != nullptr)
+	{
+		m_smokeAudio = UGameplayStatics::SpawnSound2D(GetWorld(), m_smokeSFX, gameInstance->GetSFXVolume(), 1, 0);
+	}
+
+	if (m_player != nullptr && m_owner != nullptr && gameMode != nullptr && gameInstance != nullptr)
+	{
+		m_isInitalisationDone = true;
 	}
 }
 

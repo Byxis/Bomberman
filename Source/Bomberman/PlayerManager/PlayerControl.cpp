@@ -75,12 +75,13 @@ void APlayerControl::BeginPlay()
 		m_startDelay = 15;
 	}
 	PlayMusic();
+	/*
 	if (m_touchInterface != nullptr)
 	{
 		GetWorld()->GetFirstPlayerController()->SetShowMouseCursor(true);
 		GetWorld()->GetFirstPlayerController()->SetVirtualJoystickVisibility(true);
 		GetWorld()->GetFirstPlayerController()->ActivateTouchInterface(m_touchInterface);
-	}
+	}*/
 }
 
 void APlayerControl::EndPlay(const EEndPlayReason::Type EndPlayReason)
@@ -96,6 +97,13 @@ void APlayerControl::EndPlay(const EEndPlayReason::Type EndPlayReason)
 void APlayerControl::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
+
+	if (GEngine)
+	{
+		GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Yellow, UGameplayStatics::GetCurrentLevelName(GetWorld(), true));
+	}
+
+	SpringArmComp->SetWorldLocationAndRotation(FVector(1650, 850, 1650.0f), FRotator(-90.0f, 0.0f, -90.0f));
 
 	if (m_startDelay > 0 && m_gameMode != nullptr && (m_gameMode->GetCurrentGameState() == EGameState::StartingLevel || m_gameMode->GetCurrentGameState() == EGameState::End) )
 	{
@@ -127,7 +135,10 @@ void APlayerControl::Tick(float DeltaTime)
 			GetWorld()->GetFirstPlayerController()->SetShowMouseCursor(true);
 		}
 	}
-
+	if (GEngine)
+	{
+		GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Green, UGameplayStatics::GetCurrentLevelName(GetWorld(), true));
+	}
 	if (m_gameMode != nullptr && m_gameMode->GetCurrentGameState() == EGameState::LevelEnd && !m_hasEnded)
 	{
 		m_hasEnded = true;
@@ -144,11 +155,13 @@ void APlayerControl::Tick(float DeltaTime)
 		else if (m_gameMode != nullptr)
 			m_gameMode->RestartLevel();
 		else
-			Damage();
-			
+			Damage();		
 	}
 
-	SpringArmComp->SetWorldLocationAndRotation(FVector(1650, 850, 1650.0f), FRotator(-90.0f, 0.0f, -90.0f));
+	if (GEngine)
+	{
+		GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Red, UGameplayStatics::GetCurrentLevelName(GetWorld(), true));
+	}
 }
 
 void APlayerControl::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)

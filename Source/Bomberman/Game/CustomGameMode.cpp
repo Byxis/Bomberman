@@ -48,7 +48,7 @@ void ACustomGameMode::BeginPlay()
 				m_spawner->SpawnEnemies(true);
 			m_timer = 30.0f;
 		}
-		SetCurrentGameState(EGameState::StartingLevel);
+		SetCurrentGameState(EGameState::Playing);
 	}
 	Super::BeginPlay();
 }

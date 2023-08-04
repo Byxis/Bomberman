@@ -46,6 +46,7 @@ private:
 	void ApplyDestroyEffect();
 	bool CanSpawnFlames(FVector _startTrace, FVector _endTrace);
 	void CheckIfWall(FVector _startTrace, FVector _endTrace);
+	void TryInit();
 
 	UPROPERTY(EditAnywhere, meta = (AllowPrivateAccess = "true"))
 	USoundCue* m_smokeSFX = nullptr;

@@ -30,5 +30,11 @@
 				"Win64"
 			]
 		}
+	],
+	"TargetPlatforms": [
+		"Android",
+		"HoloLens",
+		"IOS",
+		"Windows"
 	]
 }
