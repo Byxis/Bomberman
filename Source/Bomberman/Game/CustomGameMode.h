@@ -76,7 +76,7 @@ private:
 	int m_spawnedBonus = 0;
 	TArray<AActor*> m_enemies;
 	bool m_hasExitSpawned = false;
-	float m_timer = 200.0f;
+	float m_timer = 200;
 	bool m_hasTimeExpired = false;
 	UCustomGameInstance* m_gameInstance = nullptr;
 	float m_endingLevelTimer = 3.0f;

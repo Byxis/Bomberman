@@ -229,14 +229,27 @@ bool AEnemyHandler::IsDirectionAvailable(FVector _direction)
 	{
 		CQP->AddIgnoredActor(m_playerPawn);
 	}
-
-	if (GetWorld()->LineTraceMultiByChannel(hitResults, GetActorLocation(), GetActorLocation()+_direction, ECC_OverlapAll_Deprecated, *CQP))
+	if (m_iscloudEnemy)
 	{
-		if (hitResults.Num() != 0)
+		if (GetWorld()->LineTraceMultiByChannel(hitResults, GetActorLocation(), GetActorLocation() + _direction, ECC_GameTraceChannel4, *CQP))
 		{
-			return false;
+			if (hitResults.Num() != 0)
+			{
+				return false;
+			}
 		}
 	}
+	else
+	{
+		if (GetWorld()->LineTraceMultiByChannel(hitResults, GetActorLocation(), GetActorLocation() + _direction, ECC_GameTraceChannel1, *CQP))
+		{
+			if (hitResults.Num() != 0)
+			{
+				return false;
+			}
+		}
+	}
+	
 	return true;
 }
 
