@@ -16,7 +16,8 @@ enum class EGameState : uint8
 	Playing,
 	PauseMenu,
 	LevelEnd,
-	End
+	End,
+	None
 };
 
 class UBombHandler;
@@ -67,7 +68,7 @@ protected:
 	virtual void BeginPlay() override;
 
 private:
-	EGameState m_currentGameState = EGameState::Playing;
+	EGameState m_currentGameState = EGameState::None;
 	TArray<FString> m_levels;
 	TArray<UBombHandler*> m_bombs;
 	TArray<AFlames*> m_flames;
@@ -76,7 +77,7 @@ private:
 	int m_spawnedBonus = 0;
 	TArray<AActor*> m_enemies;
 	bool m_hasExitSpawned = false;
-	float m_timer = 200;
+	float m_timer = 10;//TODO: Repplace value by 200
 	bool m_hasTimeExpired = false;
 	UCustomGameInstance* m_gameInstance = nullptr;
 	float m_endingLevelTimer = 3.0f;

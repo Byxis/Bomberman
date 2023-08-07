@@ -25,18 +25,22 @@ ACustomGameMode::ACustomGameMode()
 	m_levels.Add("Level_5");
 	m_levels.Add("Level_Bonus_1");
 	m_levels.Add("Level_6");
+	m_levels.Add("Level_7");
+	m_levels.Add("Level_8");
+	m_levels.Add("Level_9");
+	m_levels.Add("Level_10");
+	m_levels.Add("Level_Bonus_2");
 }
 
 void ACustomGameMode::BeginPlay()
 {
 	m_spawner = Cast<AEnemySpawner>(UGameplayStatics::GetActorOfClass(GetWorld(), AEnemySpawner::StaticClass()));
 	m_gameInstance = Cast<UCustomGameInstance>(UGameplayStatics::GetGameInstance(GetWorld()));
-
-	if (UGameplayStatics::GetCurrentLevelName(GetWorld(), true).Equals(TEXT("Level_0")))
+	if (UGameplayStatics::GetCurrentLevelName(GetWorld(), true).Contains(TEXT("Level_0")))
 	{
 		SetCurrentGameState(EGameState::Menu);
 	}
-	else if (UGameplayStatics::GetCurrentLevelName(GetWorld(), true).Equals(TEXT("Level_End")))
+	else if (UGameplayStatics::GetCurrentLevelName(GetWorld(), true).Contains(TEXT("Level_End")))
 	{
 		SetCurrentGameState(EGameState::End);
 	}
@@ -48,7 +52,7 @@ void ACustomGameMode::BeginPlay()
 				m_spawner->SpawnEnemies(true);
 			m_timer = 30.0f;
 		}
-		SetCurrentGameState(EGameState::Playing);
+		SetCurrentGameState(EGameState::StartingLevel);
 	}
 	Super::BeginPlay();
 }
@@ -155,7 +159,7 @@ void ACustomGameMode::AddWall(AActor* _actor)
 				mesh->SetCollisionProfileName(FName("GhostWallsEnemy"));
 			}
 		}
-		else
+		else if(m_gameInstance != nullptr)
 		{
 			if (m_gameInstance->HasGhostWallsBonus())
 			{

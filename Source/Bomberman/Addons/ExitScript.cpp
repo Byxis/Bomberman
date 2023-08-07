@@ -11,14 +11,13 @@ AExitScript::AExitScript(const FObjectInitializer& _objectInitializer)
 	if (m_collision != nullptr)
 	{
 		m_collision->SetRelativeScale3D(FVector(1.0f, 1.0f, 1.0f));
-		m_collision->SetHiddenInGame(true);
 		m_collision->OnComponentBeginOverlap.AddDynamic(this, &AExitScript::OnPlayerEnterExit);
 
 		RootComponent = m_collision;
 	}
 }
 
-void AExitScript::Tick(float DeltaTime)
+void AExitScript::Tick(float _deltaTime)
 {
 	if (m_gameMode == nullptr)
 	{
@@ -35,14 +34,17 @@ void AExitScript::Tick(float DeltaTime)
 	}
 }
 
-void AExitScript::OnPlayerEnterExit(class UPrimitiveComponent* HitComp, class AActor* OtherActor, class UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
+void AExitScript::OnPlayerEnterExit(class UPrimitiveComponent* _hitComp, class AActor* _otherActor, class UPrimitiveComponent* _otherComp, int32 _otherBodyIndex, bool _fromSweep, const FHitResult& _sweepResult)
 {
+	APlayerControl* playerControl = Cast<APlayerControl>(_otherActor);
+	if (playerControl != nullptr)
+		return;
+
 	if (m_gameMode == nullptr)
 	{
 		m_gameMode = Cast<ACustomGameMode>(UGameplayStatics::GetGameMode(this));
-	} 
-	APlayerControl* playerControl = Cast<APlayerControl>(OtherActor);
-	if (m_gameMode != nullptr && m_gameMode->IsLevelFinished() && playerControl != nullptr)
+	}
+	if (m_gameMode != nullptr && m_gameMode->IsLevelFinished())
 	{
 		m_gameMode->NextLevel();
 	}

@@ -14,7 +14,7 @@ void ADamageableActor::BeginPlay()
 
 	m_health = m_sartingHealth;
 	m_mesh = GetComponentByClass<UStaticMeshComponent>();
-
+	check(m_mesh);
 	if (m_health == 1)
 	{
 		if (m_mesh != nullptr && m_destroyedBricks != nullptr)
@@ -29,7 +29,7 @@ void ADamageableActor::BeginPlay()
 	}
 }
 
-std::list<EBonus> ADamageableActor::GetAvailablebonusWithWeight(UCustomGameInstance* _gameInstance)
+std::list<EBonus> ADamageableActor::GetAvailableBonusWithWeight(UCustomGameInstance* _gameInstance)
 {
 	std::list<EBonus> bonusList;
 	if (!_gameInstance->HasMaxedBombLimit() && m_bonusLimit != nullptr)
@@ -84,9 +84,7 @@ void ADamageableActor::SpawnBonus(EBonus bonus)
 			AActor* bonusLimitActor = GetWorld()->SpawnActor<AActor>(m_bonusLimit, GetActorLocation() - FVector(0,0,50), GetActorRotation());
 			ABonus* bonusLimit = Cast<ABonus>(bonusLimitActor);
 			if (bonusLimit != nullptr)
-			{
-				bonusLimit->SetBonusType(0);
-			}
+				bonusLimit->SetBonusType(EBonus::Limit);
 			break;
 		}
 		case EBonus::Power:
@@ -94,9 +92,7 @@ void ADamageableActor::SpawnBonus(EBonus bonus)
 			AActor* bonusPowerActor = GetWorld()->SpawnActor<AActor>(m_bonusPower, GetActorLocation() - FVector(0, 0, 50), GetActorRotation());
 			ABonus* bonusPower = Cast<ABonus>(bonusPowerActor);
 			if (bonusPower != nullptr)
-			{
-				bonusPower->SetBonusType(1);
-			}
+				bonusPower->SetBonusType(EBonus::Power);
 			break;
 		}
 		case EBonus::Speed:
@@ -104,9 +100,7 @@ void ADamageableActor::SpawnBonus(EBonus bonus)
 			AActor* bonusSpeedActor = GetWorld()->SpawnActor<AActor>(m_bonusSpeed, GetActorLocation() - FVector(0, 0, 50), GetActorRotation());
 			ABonus* bonusSpeed = Cast<ABonus>(bonusSpeedActor);
 			if (bonusSpeed != nullptr)
-			{
-				bonusSpeed->SetBonusType(2);
-			}
+				bonusSpeed->SetBonusType(EBonus::Speed);
 			break;
 		}
 		case EBonus::Detonator:
@@ -114,9 +108,7 @@ void ADamageableActor::SpawnBonus(EBonus bonus)
 			AActor* bonusDetonatorActor = GetWorld()->SpawnActor<AActor>(m_bonusDetonator, GetActorLocation() - FVector(0, 0, 50), GetActorRotation());
 			ABonus* bonusDetonator = Cast<ABonus>(bonusDetonatorActor);
 			if (bonusDetonator != nullptr)
-			{
-				bonusDetonator->SetBonusType(3);
-			}
+				bonusDetonator->SetBonusType(EBonus::Detonator);
 			break;
 		}
 		case EBonus::Vest:
@@ -124,9 +116,7 @@ void ADamageableActor::SpawnBonus(EBonus bonus)
 			AActor* bonusVestActor = GetWorld()->SpawnActor<AActor>(m_bonusVest, GetActorLocation() - FVector(0, 0, 50), GetActorRotation());
 			ABonus* bonusVest = Cast<ABonus>(bonusVestActor);
 			if (bonusVest != nullptr)
-			{
-				bonusVest->SetBonusType(4);
-			}
+				bonusVest->SetBonusType(EBonus::Vest);
 			break;
 		}
 		case EBonus::GhostWalls:
@@ -134,9 +124,7 @@ void ADamageableActor::SpawnBonus(EBonus bonus)
 			AActor* bonusGhostWallsActor = GetWorld()->SpawnActor<AActor>(m_bonusGhostWalls, GetActorLocation() - FVector(0, 0, 50), GetActorRotation());
 			ABonus* bonusGhostWalls = Cast<ABonus>(bonusGhostWallsActor);
 			if (bonusGhostWalls != nullptr)
-			{
-				bonusGhostWalls->SetBonusType(5);
-			}
+				bonusGhostWalls->SetBonusType(EBonus::GhostWalls);
 			break;
 		}
 	}
@@ -164,7 +152,7 @@ bool ADamageableActor::Damage()
 			}
 			else if ((random <= 5 || gameMode->GetNbrOfWalls() <= gameMode->GetRemainingBonuses()) && gameMode->CanSpawnBonus())
 			{
-				std::list<EBonus> bonusList = GetAvailablebonusWithWeight(gameInstance);
+				std::list<EBonus> bonusList = GetAvailableBonusWithWeight(gameInstance);
 				if (bonusList.size() != 0)
 				{
 					std::list<EBonus>::iterator it = bonusList.begin();

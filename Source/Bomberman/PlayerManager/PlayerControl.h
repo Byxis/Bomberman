@@ -93,6 +93,7 @@ private:
 	bool m_isPlacingBomb = false;
 	float m_startDelay = 4.2f;
 	bool m_hasEnded = false;
+	bool m_isLoaded = false;
 
 	UPROPERTY(Editanywhere)
 	TSubclassOf<UPlayerHUD> m_playerHudClass = nullptr;
@@ -146,4 +147,6 @@ private:
 
 	UPROPERTY(EditAnywhere, meta = (AllowPrivateAccess = "true"))
 	UTouchInterface* m_touchInterface = nullptr;
+
+	void LoadPlayerControl();
 };

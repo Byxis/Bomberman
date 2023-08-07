@@ -12,10 +12,10 @@ class BOMBERMAN_API AExitScript : public AActor
 	GENERATED_BODY()
 	
 public:
-	AExitScript(const FObjectInitializer& objectInitializer);
-	virtual void Tick(float DeltaTime) override;
+	AExitScript(const FObjectInitializer& _objectInitializer);
+	virtual void Tick(float _deltaTime) override;
 	UFUNCTION()
-	void OnPlayerEnterExit(class UPrimitiveComponent* HitComp, class AActor* OtherActor, class UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
+	void OnPlayerEnterExit(class UPrimitiveComponent* _hitComp, class AActor* _otherActor, class UPrimitiveComponent* _otherComp, int32 _otherBodyIndex, bool _fromSweep, const FHitResult& _sweepResult);
 	bool IsOpened();
 
 private:

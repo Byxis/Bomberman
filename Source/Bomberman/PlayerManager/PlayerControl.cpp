@@ -40,16 +40,39 @@ APlayerControl::APlayerControl()
 void APlayerControl::BeginPlay()
 {
 	Super::BeginPlay();
+	SpringArmComp->SetWorldLocationAndRotation(FVector(1650, 850, 1650.0f), FRotator(-90.0f, 0.0f, -90.0f));
 
-	m_gameMode = Cast<ACustomGameMode>(UGameplayStatics::GetGameMode(this));
+	LoadPlayerControl();
+	/*
+	if (m_touchInterface != nullptr)
+	{
+		GetWorld()->GetFirstPlayerController()->SetShowMouseCursor(true);
+		GetWorld()->GetFirstPlayerController()->SetVirtualJoystickVisibility(true);
+		GetWorld()->GetFirstPlayerController()->ActivateTouchInterface(m_touchInterface);
+	}*/
+}
+
+void APlayerControl::LoadPlayerControl()
+{
+	m_gameMode = Cast<ACustomGameMode>(UGameplayStatics::GetGameMode(GetWorld()));
+	AGameModeBase* gm = UGameplayStatics::GetGameMode(GetWorld());
 	m_gameInstance = Cast<UCustomGameInstance>(UGameplayStatics::GetGameInstance(GetWorld()));
 	m_maxPlacedBomb = m_gameInstance->GetBombLimit();
 
 	if (m_gameMode == nullptr)
+	{
 		return;
+	}
+	if (m_gameMode->GetCurrentGameState() == EGameState::None)
+	{
+		return;
+	}
+
 	if (m_gameMode->GetCurrentGameState() == EGameState::Menu)
 	{
+		SpringArmComp->SetWorldLocationAndRotation(FVector(1650, 850, 1650.0f), FRotator(0, 0, 0));
 		OpenMainMenu();
+		m_isLoaded = true;
 	}
 	else if (m_gameMode->GetCurrentGameState() == EGameState::Playing)
 	{
@@ -60,6 +83,7 @@ void APlayerControl::BeginPlay()
 		}
 		ActualiseLife();
 		ActualiseScore();
+		m_isLoaded = true;
 	}
 	else if (m_gameMode->GetCurrentGameState() == EGameState::StartingLevel)
 	{
@@ -69,19 +93,14 @@ void APlayerControl::BeginPlay()
 		{
 			m_startingHud->AddToViewport();
 		}
+		m_isLoaded = true;
 	}
 	else if (m_gameMode->GetCurrentGameState() == EGameState::End)
 	{
 		m_startDelay = 15;
+		m_isLoaded = true;
 	}
 	PlayMusic();
-	/*
-	if (m_touchInterface != nullptr)
-	{
-		GetWorld()->GetFirstPlayerController()->SetShowMouseCursor(true);
-		GetWorld()->GetFirstPlayerController()->SetVirtualJoystickVisibility(true);
-		GetWorld()->GetFirstPlayerController()->ActivateTouchInterface(m_touchInterface);
-	}*/
 }
 
 void APlayerControl::EndPlay(const EEndPlayReason::Type EndPlayReason)
@@ -97,12 +116,11 @@ void APlayerControl::EndPlay(const EEndPlayReason::Type EndPlayReason)
 void APlayerControl::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
-
-	if (GEngine)
+	if (!m_isLoaded)
 	{
-		GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Yellow, UGameplayStatics::GetCurrentLevelName(GetWorld(), true));
+		LoadPlayerControl();
+		return;
 	}
-
 	SpringArmComp->SetWorldLocationAndRotation(FVector(1650, 850, 1650.0f), FRotator(-90.0f, 0.0f, -90.0f));
 
 	if (m_startDelay > 0 && m_gameMode != nullptr && (m_gameMode->GetCurrentGameState() == EGameState::StartingLevel || m_gameMode->GetCurrentGameState() == EGameState::End) )
@@ -135,10 +153,6 @@ void APlayerControl::Tick(float DeltaTime)
 			GetWorld()->GetFirstPlayerController()->SetShowMouseCursor(true);
 		}
 	}
-	if (GEngine)
-	{
-		GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Green, UGameplayStatics::GetCurrentLevelName(GetWorld(), true));
-	}
 	if (m_gameMode != nullptr && m_gameMode->GetCurrentGameState() == EGameState::LevelEnd && !m_hasEnded)
 	{
 		m_hasEnded = true;
@@ -156,11 +170,6 @@ void APlayerControl::Tick(float DeltaTime)
 			m_gameMode->RestartLevel();
 		else
 			Damage();		
-	}
-
-	if (GEngine)
-	{
-		GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Red, UGameplayStatics::GetCurrentLevelName(GetWorld(), true));
 	}
 }
 

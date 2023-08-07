@@ -15,7 +15,7 @@ class BOMBERMAN_API UBombHandler : public UActorComponent
 
 public:	
 	UBombHandler(const FObjectInitializer& _objectInitializer);
-	void SetPower(int32 newPower);
+	void SetPower(int32 _newPower);
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
 	void Explode();
 
@@ -24,9 +24,6 @@ public:
 	bool IsExploding();
 	void PauseSFX(bool _bool);
 	void SetSFXVolume(float _amount);
-
-protected:
-	virtual void BeginPlay() override;
 
 private:
 	int32 m_power = 1;

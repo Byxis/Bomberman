@@ -17,10 +17,8 @@ protected:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Animation")
 	bool m_isOpened = false;
 
-
 private:
 	void UpdateAnimationProperties();
 
 	AExitScript* m_exit = nullptr;
-
 };

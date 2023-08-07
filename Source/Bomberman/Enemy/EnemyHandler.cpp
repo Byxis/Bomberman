@@ -135,6 +135,7 @@ void AEnemyHandler::OnInteract(UPrimitiveComponent* HitComp, AActor* OtherActor,
 void AEnemyHandler::ChangeDirection()
 {
 	std::list<EDirection> directions;
+	FVector position = GetActorLocation();
 
 	if (IsDirectionAvailable(FVector(0, -100, 0)))
 	{
@@ -257,13 +258,13 @@ void AEnemyHandler::UnblockEnemy()
 {
 	FVector position = GetActorLocation();
 
-	if (position.X > 3150)
-		position.X = 3150;
-	else if (position.X < 150)
-		position.X = 150;
+	if (position.X > 1150)
+		position.X = 1150;
+	else if (position.X < -1050)
+		position.X = -1050;
 
-	if (position.Y > 1550)
-		position.Y = 1550;
-	else if (position.Y < 650)
-		position.Y = 650;
+	if (position.Y > 450)
+		position.Y = 450;
+	else if (position.Y < -550)
+		position.Y = -550;
 }

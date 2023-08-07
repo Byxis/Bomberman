@@ -15,18 +15,18 @@ ABonus::ABonus(const FObjectInitializer& _objectInitializer)
 	}
 }
 
-void ABonus::Tick(float DeltaTime)
+void ABonus::Tick(float _deltaTime)
 {
-	Super::Tick(DeltaTime);
+	Super::Tick(_deltaTime);
 	if (m_invicibilityTimer > 0)
 	{
-		m_invicibilityTimer -= DeltaTime;
+		m_invicibilityTimer -= _deltaTime;
 	}
 }
 
-void ABonus::OnPlayerTakeBonus(class UPrimitiveComponent* HitComp, class AActor* OtherActor, class UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
+void ABonus::OnPlayerTakeBonus(class UPrimitiveComponent* _hitComp, class AActor* _otherActor, class UPrimitiveComponent* _otherComp, int32 _otherBodyIndex, bool _bFromSweep, const FHitResult& _sweepResult)
 {
-	APlayerControl* playerControl = Cast<APlayerControl>(OtherActor);
+	APlayerControl* playerControl = Cast<APlayerControl>(_otherActor);
 
 	if (playerControl == nullptr)
 		return;
@@ -61,32 +61,10 @@ void ABonus::OnPlayerTakeBonus(class UPrimitiveComponent* HitComp, class AActor*
 void ABonus::Damage()
 {
 	if (m_invicibilityTimer <= 0)
-	{
 		Destroy();
-	}
 }
 
-void ABonus::SetBonusType(int32 _type)
+void ABonus::SetBonusType(EBonus _type)
 {
-	switch (_type % 6)
-	{
-	default:
-		m_bonusType = EBonus::Limit;
-		break;
-	case 1:
-		m_bonusType = EBonus::Power;
-		break;
-	case 2:
-		m_bonusType = EBonus::Speed;
-		break;
-	case 3:
-		m_bonusType = EBonus::Detonator;
-		break;
-	case 4:
-		m_bonusType = EBonus::Vest;
-		break;
-	case 5:
-		m_bonusType = EBonus::GhostWalls;
-		break;
-	}
+	m_bonusType = _type;
 }

@@ -39,11 +39,6 @@ void UBombHandler::SetPower(int32 _newPower)
 	m_power = _newPower;
 }
 
-void UBombHandler::BeginPlay()
-{
-	Super::BeginPlay();
-}
-
 void UBombHandler::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
 {
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
@@ -54,7 +49,6 @@ void UBombHandler::TickComponent(float DeltaTime, ELevelTick TickType, FActorCom
 		return;
 	}
 		
-
 	m_timer -= DeltaTime;
 
 	if (m_material != nullptr)
@@ -163,7 +157,6 @@ bool UBombHandler::CanSpawnFlames(FVector _startTrace, FVector _endTrace)
 {
 	FCollisionQueryParams* CQP = new FCollisionQueryParams();
 	TArray<FHitResult> hitResults;
-	bool result = true;
 
 	if (GetWorld()->LineTraceMultiByChannel(hitResults, _startTrace, _endTrace, ECC_Visibility, *CQP))
 	{
@@ -180,12 +173,12 @@ bool UBombHandler::CanSpawnFlames(FVector _startTrace, FVector _endTrace)
 
 				if (playerControl == nullptr && enemyHandler == nullptr && bonus == nullptr && bomb == nullptr && flames == nullptr)
 				{
-					result = false;
+					return false;
 				}
 			}
 		}
 	}
-	return result;
+	return true;
 }
 
 void UBombHandler::CheckIfWall(FVector _startTrace, FVector _endTrace)

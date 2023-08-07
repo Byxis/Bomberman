@@ -13,7 +13,8 @@ enum class EBonus : uint8
 	Speed,
 	Detonator,
 	Vest,
-	GhostWalls
+	GhostWalls,
+	MaxBonus
 };
 
 UCLASS()
@@ -22,12 +23,12 @@ class BOMBERMAN_API ABonus : public AActor
 	GENERATED_BODY()
 	
 public:	
-	ABonus(const FObjectInitializer& objectInitializer);
-	virtual void Tick(float DeltaTime) override;
+	ABonus(const FObjectInitializer& _objectInitializer);
+	virtual void Tick(float _deltaTime) override;
 	UFUNCTION()
-	void OnPlayerTakeBonus(class UPrimitiveComponent* HitComp, class AActor* OtherActor, class UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
+	void OnPlayerTakeBonus(class UPrimitiveComponent* _hitComp, class AActor* _otherActor, class UPrimitiveComponent* _otherComp, int32 _otherBodyIndex, bool _bFromSweep, const FHitResult& _sweepResult);
 	void Damage();
-	void SetBonusType(int32 _type);
+	void SetBonusType(EBonus _type);
 
 private:
 	UPROPERTY(EditAnywhere, meta = (AllowPrivateAccess = "true"))
